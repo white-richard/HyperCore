@@ -13,6 +13,8 @@ class LorentzEmbeddings(nn.Module):
     based on "Linguistic Input Features Improve Neural Machine Translation"
     :cite:`sennrich2016linguistic`.
     Adapted from "Fully hyperbolic neural networks" (chen2021fully)
+
+
     Args:
         manifold_in (Lorentz): manifold of the inputs
         num_embeddings (int): size of the vocab
@@ -141,7 +143,7 @@ class LorentzEmbeddings(nn.Module):
             emb = self.add_pos(source, pe)
             if batch_first:
                 emb = emb.permute(1, 0, 2)
-            # emb = self.point(emb)
+            emb = self.point(emb)
         else:
             emb = source
             emb = emb.permute(1, 0, 2)

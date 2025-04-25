@@ -1,3 +1,9 @@
+"""
+LorentzMultiheadAttention module implements multi-head attention in Lorentzian geometry.
+It supports both full attention (hyperbolic self attention) and linear focused attention
+(approximate attention mechanism using Lorentz geometry).
+"""
+
 import pdb
 import math
 import os
@@ -11,6 +17,22 @@ from hypercore.manifolds import Lorentz
 from hypercore.nn import LResNet
 
 class LorentzMultiheadAttention(nn.Module):
+    """
+    Multi-head attention mechanism in Lorentzian (hyperbolic) geometry.
+
+    Requires input dimension to be ***dimension per head***
+
+    Args:
+        manifold (Lorentz): Lorentzian manifold object for geometry operations.
+        in_channels (int): Input dimensionality.
+        out_channels (int): Output dimensionality.
+        num_heads (int): Number of attention heads.
+        use_weight (bool): Whether to use a trainable value projection (Wv).
+        power_k (float): Exponent used in the linear focused approximation.
+        attention_type (str): Either 'full' (self-attention) or 'linear_focused'.
+        trans_heads_concat (bool): Whether to concatenate attention heads and linearly transform output.
+        normalize (bool): Whether to normalize input queries and keys.
+    """
     def __init__(self, manifold: Lorentz,  in_channels, out_channels, num_heads, use_weight=True, power_k=2.0, attention_type='linear_focused', trans_heads_concat=False, normalize=False):
         super().__init__()
         self.manifold = manifold
@@ -19,21 +41,10 @@ class LorentzMultiheadAttention(nn.Module):
         self.num_heads = num_heads
         self.use_weight = use_weight
         self.attention_type = attention_type
-        # self.Wk = nn.ModuleList()
-        # self.Wq = nn.ModuleList()
-        # for i in range(self.num_heads):
-        #     self.Wk.append(LorentzLinear(self.manifold, self.in_channels, self.out_channels - 1))
-        #     self.Wq.append(LorentzLinear(self.manifold, self.in_channels, self.out_channels - 1))
-        # self.Wk = LorentzLinear(self.manifold, num_heads * self.in_channels, num_heads * (self.out_channels) - 1)
-        # self.Wq = LorentzLinear(self.manifold, num_heads * self.in_channels, num_heads * (self.out_channels) - 1)
         self.Wk = nn.Linear(num_heads * self.in_channels, num_heads * (self.out_channels - 1))
         self.Wq = nn.Linear(num_heads * self.in_channels, num_heads * (self.out_channels - 1))
 
         if use_weight:
-            # self.Wv = nn.ModuleList()
-            # for i in range(self.num_heads):
-            #     self.Wv.append(LorentzLinear(self.manifold, in_channels, out_channels - 1))
-            # self.Wv = LorentzLinear(self.manifold, num_heads * self.in_channels, num_heads * (self.out_channels) - 1)
             self.Wv = nn.Linear(num_heads * self.in_channels, num_heads * (self.out_channels - 1))
 
         self.scale = nn.Parameter(torch.tensor([math.sqrt(num_heads * out_channels)]))
@@ -44,7 +55,7 @@ class LorentzMultiheadAttention(nn.Module):
         self.power_k = power_k
         self.trans_heads_concat = trans_heads_concat
         if self.trans_heads_concat:
-            self.final_linear = nn.Linear(self.num_heads * (self.out_channels), self.num_heads * self.out_channels - 1) #should be nn.linear instead of LorentLinear
+            self.final_linear = nn.Linear(self.num_heads * (self.out_channels), self.num_heads * self.out_channels - 1) 
         self.normalize = normalize
 
     @staticmethod
@@ -104,6 +115,13 @@ class LorentzMultiheadAttention(nn.Module):
         return x_out.type_as(x).to(device)
 
     def full_attention(self, qs, ks, vs, output_attentions=False, mask=None):
+        """
+        Computes Lorentz full attention via hyperbolic inner products and centroid.
+
+        Returns:
+            attention_output (Tensor): Resulting attended output.
+            att_weight (Tensor, optional): Attention weight matrix if output_attentions=True.
+        """
         # reshape the inputs
         qs = self.project(qs)
         ks = self.project(ks)
@@ -133,6 +151,9 @@ class LorentzMultiheadAttention(nn.Module):
             return att_output
 
     def linear_focus_attention(self, hyp_qs, hyp_ks, hyp_vs, output_attentions=False, mask=None):
+            """
+            Computes linear focused attention in Lorentz geometry.
+            """
             qs = hyp_qs[..., 1:]
             ks = hyp_ks[..., 1:]
             v = hyp_vs[..., 1:]
@@ -162,24 +183,24 @@ class LorentzMultiheadAttention(nn.Module):
             else:
                 return attn_output
 
-    def forward(self, query_input, source_input, edge_index=None, edge_weight=None, output_attentions=False, mask=None, rot_pos=None):
+    def forward(self, query_input, source_input, output_attentions=False, mask=None, rot_pos=None, edge_index=None, edge_weight=None):
+        """
+        Forward pass for Lorentz multi-head attention.
+
+        Args:
+            query_input (Tensor): Input query sequence of shape [B, N, D].
+            source_input (Tensor): Input key/value source sequence.
+            output_attentions (bool): If True, returns attention weights.
+            mask (Tensor): Attention mask.
+            rot_pos (Tensor): Rotary position encodings.
+
+        Returns:
+            final_output (Tensor): Attention output of shape [B, N, D].
+            attn (Tensor, optional): Attention weights.
+        """
         batch_size, seq_length, embed_dim = source_input.size()
         if mask is not None:
             mask = self.shape_mask(mask, batch_size, self.num_heads, seq_length)
-        # feature transformation
-        # q_list = []
-        # k_list = []
-        # v_list = []
-        # for i in range(self.num_heads):
-        #     q_list.append(self.Wq[i](query_input))
-        #     k_list.append(self.Wk[i](source_input))
-        #     if self.use_weight:
-        #         v_list.append(self.Wv[i](source_input))
-        #     else:
-        #         v_list.append(source_input)
-        # query = torch.stack(q_list, dim=2)  # [B, N, H, D]
-        # key = torch.stack(k_list, dim=2) # [B, N, H, D]
-        # value = torch.stack(v_list, dim=2)  # [B, N, H, D]
         query = self.Wq(query_input).view(batch_size, seq_length, self.num_heads, self.out_channels - 1) # [B, N, H, D]
         key = self.Wk(source_input).view(batch_size, seq_length, self.num_heads, self.out_channels - 1) # [B, N, H, D]
         if rot_pos is not None:
@@ -210,95 +231,93 @@ class LorentzMultiheadAttention(nn.Module):
 
 
         final_output = attention_output
-        # multi-head attention aggregation
-        # final_output = self.manifold.mid_point(final_output)
 
         if output_attentions:
             return final_output, attn
         else:
             return final_output
 
-class LTransEncoder(nn.Module):
-    def __init__(self, manifold_in: Lorentz, manifold_hidden: Lorentz, manifold_out: Lorentz, in_channels, hidden_channels, num_layers=2, num_heads=1,
-                 dropout=0.5, use_bn=True, use_residual=True, use_weight=True, use_act=True, add_positional_encoding=True, attention_type='linear focused', trans_heads_concat=True, device='cpu'):
-        super().__init__()
-        self.manifold_in = manifold_in
-        self.manifold_hidden = manifold_hidden
-        self.manifold_out = manifold_out
+# class LTransEncoder(nn.Module):
+#     def __init__(self, manifold_in: Lorentz, manifold_hidden: Lorentz, manifold_out: Lorentz, in_channels, hidden_channels, num_layers=2, num_heads=1,
+#                  dropout=0.5, use_bn=True, use_residual=True, use_weight=True, use_act=True, add_positional_encoding=True, attention_type='linear focused', trans_heads_concat=True, device='cpu'):
+#         super().__init__()
+#         self.manifold_in = manifold_in
+#         self.manifold_hidden = manifold_hidden
+#         self.manifold_out = manifold_out
         
-        self.in_channels = in_channels
-        self.hidden_channels = hidden_channels
-        self.num_layers = num_layers
-        self.num_heads = num_heads
-        self.dropout_rate = dropout
-        self.use_bn = use_bn
-        self.residual = use_residual
-        self.use_act = use_act
-        self.use_weight = use_weight
+#         self.in_channels = in_channels
+#         self.hidden_channels = hidden_channels
+#         self.num_layers = num_layers
+#         self.num_heads = num_heads
+#         self.dropout_rate = dropout
+#         self.use_bn = use_bn
+#         self.residual = use_residual
+#         self.use_act = use_act
+#         self.use_weight = use_weight
 
-        self.convs = nn.ModuleList()
-        self.fcs = nn.ModuleList()
-        self.bns = nn.ModuleList()
+#         self.convs = nn.ModuleList()
+#         self.fcs = nn.ModuleList()
+#         self.bns = nn.ModuleList()
 
-        self.fcs.append(LorentzLinear(self.manifold_in, self.in_channels, self.hidden_channels, self.manifold_hidden))
-        self.bns.append(LorentzLayerNorm(self.manifold_hidden, self.hidden_channels))
+#         self.fcs.append(LorentzLinear(self.manifold_in, self.in_channels, self.hidden_channels, self.manifold_hidden))
+#         self.bns.append(LorentzLayerNorm(self.manifold_hidden, self.hidden_channels))
 
-        self.add_pos_enc = add_positional_encoding
-        self.positional_encoding = LorentzLinear(self.manifold_in, self.in_channels, self.hidden_channels, self.manifold_hidden)
-        self.epsilon = torch.tensor([1.0], device=device)
+#         self.add_pos_enc = add_positional_encoding
+#         self.positional_encoding = LorentzLinear(self.manifold_in, self.in_channels, self.hidden_channels, self.manifold_hidden)
+#         self.epsilon = torch.tensor([1.0], device=device)
 
-        for i in range(self.num_layers):
-            self.convs.append(
-                LorentzMultiheadAttention(self.manifold_hidden, self.hidden_channels, self.hidden_channels, num_heads=self.num_heads, use_weight=self.use_weight, attention_type=attention_type, trans_heads_concat=trans_heads_concat))
-            self.bns.append(LorentzLayerNorm(self.manifold_hidden, self.hidden_channels))
+#         for i in range(self.num_layers):
+#             self.convs.append(
+#                 LorentzMultiheadAttention(self.manifold_hidden, self.hidden_channels, self.hidden_channels, num_heads=self.num_heads, use_weight=self.use_weight, attention_type=attention_type, trans_heads_concat=trans_heads_concat))
+#             self.bns.append(LorentzLayerNorm(self.manifold_hidden, self.hidden_channels))
 
-        self.dropout = LorentzDropout(self.manifold_hidden, self.dropout_rate)
-        self.activation = LorentzActivation(self.manifold_hidden, activation=F.relu)
+#         self.dropout = LorentzDropout(self.manifold_hidden, self.dropout_rate)
+#         self.activation = LorentzActivation(self.manifold_hidden, activation=F.relu)
 
-        self.fcs.append(LorentzLinear(self.manifold_hidden, self.hidden_channels, self.hidden_channels, self.manifold_out))
+#         self.fcs.append(LorentzLinear(self.manifold_hidden, self.hidden_channels, self.hidden_channels, self.manifold_out))
 
-        self.residual = LResNet(self.manifold_hidden)
+#         self.residual = LResNet(self.manifold_hidden)
 
-    def forward(self, x_input):
-        layer_ = []
-        x = self.fcs[0](x_input, x_manifold='euc')
-        if self.add_pos_enc:
-            x_pos = self.positional_encoding(x_input, x_manifold='euc')
-            x = self.residual(x, self.epsilon*x_pos)
-        if self.use_bn:
-            x = self.bns[0](x)
-        if self.use_act:
-            x = self.activation(x)
-        x = self.dropout(x, training=self.training)
-        layer_.append(x)
+#     def forward(self, x_input):
+#         layer_ = []
+#         x = self.fcs[0](x_input, x_manifold='euc')
+#         if self.add_pos_enc:
+#             x_pos = self.positional_encoding(x_input, x_manifold='euc')
+#             x = self.residual(x, self.epsilon*x_pos)
+#         if self.use_bn:
+#             x = self.bns[0](x)
+#         if self.use_act:
+#             x = self.activation(x)
+#         x = self.dropout(x, training=self.training)
+#         layer_.append(x)
 
-        for i, conv in enumerate(self.convs):
-            x = conv(x, x)
-            if self.residual:
-                x = self.residual(x, layer_[i])
-            if self.use_bn:
-                x = self.bns[i + 1](x)
-            if self.use_act:
-                x = self.activation(x)
-            # # x = self.dropout(x, training=self.training)
-            layer_.append(x)
+#         for i, conv in enumerate(self.convs):
+#             x = conv(x, x)
+#             if self.residual:
+#                 x = self.residual(x, layer_[i])
+#             if self.use_bn:
+#                 x = self.bns[i + 1](x)
+#             if self.use_act:
+#                 x = self.activation(x)
+#             # # x = self.dropout(x, training=self.training)
+#             layer_.append(x)
 
-        x = self.fcs[-1](x)
-        return x
+#         x = self.fcs[-1](x)
+#         return x
 
-    def get_attentions(self, x):
-        layer_, attentions = [], []
-        x = self.fcs[0](x)
-        if self.use_bn:
-            x = self.bns[0](x)
-        x = self.activation(x)
-        layer_.append(x)
-        for i, conv in enumerate(self.convs):
-            x, attn = conv(x, x, output_attn=True)
-            attentions.append(attn)
-            if self.residual:
-                x = self.residual(x, layer_[i])
-            if self.use_bn:
-                x = self.bns[i + 1](x)
-            layer_.append(x)
-        return torch.stack(attentions, dim=0)  # [layer num, N, N]
+#     def get_attentions(self, x):
+#         layer_, attentions = [], []
+#         x = self.fcs[0](x)
+#         if self.use_bn:
+#             x = self.bns[0](x)
+#         x = self.activation(x)
+#         layer_.append(x)
+#         for i, conv in enumerate(self.convs):
+#             x, attn = conv(x, x, output_attn=True)
+#             attentions.append(attn)
+#             if self.residual:
+#                 x = self.residual(x, layer_[i])
+#             if self.use_bn:
+#                 x = self.bns[i + 1](x)
+#             layer_.append(x)
+#         return torch.stack(attentions, dim=0)  # [layer num, N, N]

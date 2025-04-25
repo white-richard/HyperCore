@@ -1,1 +1,1 @@
-# HypLib
+# HyperCore

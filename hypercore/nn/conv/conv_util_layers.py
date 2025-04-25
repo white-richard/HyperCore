@@ -6,6 +6,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class LorentzLayerNorm(nn.Module):
+    """
+    Implements hyperbolic layer normalization by appling standard LayerNorm to the spatial 
+    part (excluding time coordinate) of a Lorentzian vector, then recomputes the time 
+    component to satisfy the Lorentzian constraint.
+
+    Args:
+        manifold_in: Lorentz manifold object (input space).
+        in_features (int): Dimensionality of spatial input features.
+        manifold_out: Optional Lorentz manifold for projecting output.
+    """
     def __init__(self, manifold_in, in_features, manifold_out=None):
         super(LorentzLayerNorm, self).__init__()
         self.in_features = in_features
@@ -19,6 +29,15 @@ class LorentzLayerNorm(nn.Module):
         self.layer.reset_parameters()
 
     def forward(self, x):
+        """
+        Forward pass of LorentzLayerNorm.
+
+        Args:
+            x (torch.Tensor): Input tensor with Lorentzian coordinates [B, ..., D+1].
+
+        Returns:
+            torch.Tensor: Normalized tensor with updated time component.
+        """
         x_space = x[..., 1:]
         x_space = self.layer(x_space)
         x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
@@ -29,6 +48,14 @@ class LorentzLayerNorm(nn.Module):
         return x
 
 class LorentzNormalization(nn.Module):
+    """
+    Normalizes spatial components to unit norm and recomputes time component
+    to satisfy Lorentz geometry constraints.
+
+    Args:
+        manifold_in: Lorentz manifold object (input space).
+        manifold_out: Optional target manifold for output projection.
+    """
     def __init__(self, manifold_in, manifold_out=None):
         super(LorentzNormalization, self).__init__()
         self.manifold = manifold_in
@@ -36,6 +63,16 @@ class LorentzNormalization(nn.Module):
         self.c = manifold_in.c
 
     def forward(self, x, norm_factor=None):
+        """
+        Forward pass of LorentzNormalization.
+
+        Args:
+            x (torch.Tensor): Input tensor with Lorentzian coordinates.
+            norm_factor (torch.Tensor, optional): Precomputed normalization factors.
+
+        Returns:
+            torch.Tensor: Lorentz-normalized tensor.
+        """
         x_space = x[..., 1:]
         if norm_factor is not None:
             x_space = x_space * norm_factor
@@ -48,6 +85,15 @@ class LorentzNormalization(nn.Module):
         return x
 
 class LorentzActivation(nn.Module):
+    """
+    Applies a nonlinear activation to the spatial part of a Lorentzian vector,
+    followed by recomputing the time component.
+
+    Args:
+        manifold_in: Input Lorentz manifold.
+        activation (Callable): Activation function (e.g., nn.ReLU()).
+        manifold_out: Optional output Lorentz manifold.
+    """
     def __init__(self, manifold_in, activation, manifold_out=None):
         super(LorentzActivation, self).__init__()
         self.manifold = manifold_in
@@ -56,6 +102,15 @@ class LorentzActivation(nn.Module):
         self.c = manifold_in.c
 
     def forward(self, x):
+        """
+        Applies the activation and recomputes time.
+
+        Args:
+            x (torch.Tensor): Input tensor in Lorentz coordinates.
+
+        Returns:
+            torch.Tensor: Activated Lorentz vector.
+        """
         x_space = x[..., 1:]
         x_space = self.activation(x_space)
         x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
@@ -65,6 +120,15 @@ class LorentzActivation(nn.Module):
         return x
 
 class LorentzDropout(nn.Module):
+    """
+    Applies dropout to spatial coordinates of a Lorentzian vector and updates
+    time coordinate accordingly.
+
+    Args:
+        manifold_in: Input Lorentz manifold.
+        dropout (float): Dropout probability.
+        manifold_out: Optional output manifold for projection.
+    """
     def __init__(self, manifold_in, dropout, manifold_out=None):
         super(LorentzDropout, self).__init__()
         self.manifold = manifold_in
@@ -73,6 +137,16 @@ class LorentzDropout(nn.Module):
         self.c = manifold_in.c
 
     def forward(self, x, training=False):
+        """
+        Forward pass of LorentzDropout.
+
+        Args:
+            x (torch.Tensor): Input Lorentz tensor.
+            training (bool): If True, apply dropout.
+
+        Returns:
+            torch.Tensor: Tensor after dropout with corrected time.
+        """
         if training:
             x_space = x[..., 1:]
             x_space = self.dropout(x_space)
@@ -83,6 +157,17 @@ class LorentzDropout(nn.Module):
         return x
     
 class LResNet(nn.Module):
+    """
+    Residual block in Lorentz space with optional learnable scaling.
+
+    Args:
+        manifold_in: Input manifold.
+        weight (Tensor or None): Initial weight tensor (optional).
+        batch_size (int or None): Batch size for per-sample weights.
+        use_scale (bool): Whether to scale spatial output.
+        scale (float or None): Fixed or use learnable scaling when None.
+        manifold_out: Optional target manifold for output projection.
+    """
     def __init__(self, manifold_in, weight=None, batch_size=None, use_scale=False, scale=None, manifold_out=None):
         super(LResNet, self).__init__()
         self.manifold = manifold_in
@@ -107,6 +192,15 @@ class LResNet(nn.Module):
         self.manifold_out = manifold_out
 
     def forward(self, x, y):
+        """
+        Forward pass for LResNet residual block.
+
+        Args:
+            x, y (torch.Tensor): Lorentzian vectors.
+
+        Returns:
+            torch.Tensor: Resulting Lorentzian residual.
+        """
         ave = x + y * self.w_y
         denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(1e-6).sqrt()
         x = self.c.sqrt() * ave / denom
@@ -125,11 +219,13 @@ class LResNet(nn.Module):
 
 class LorentzRMSNorm(nn.Module):
     """
-    Root Mean Square Layer Normalization (RMSNorm).
+    Root Mean Square Layer Normalization in Lorentz geometry.
 
     Args:
-        dim (int): Dimension of the input tensor.
-        eps (float): Epsilon value for numerical stability. Defaults to 1e-6.
+        manifold_in: Input manifold.
+        dim (int): Dimensionality of spatial vector.
+        eps (float): Small value for numerical stability.
+        manifold_out: Optional output manifold.
     """
     def __init__(self, manifold_in, dim: int, eps: float = 1e-6, manifold_out=None):
         super().__init__()
@@ -142,13 +238,13 @@ class LorentzRMSNorm(nn.Module):
 
     def forward(self, x: torch.Tensor):
         """
-        Forward pass for RMSNorm.
+        Forward pass for LorentzRMSNorm.
 
         Args:
-            x (torch.Tensor): Input tensor.
+            x (torch.Tensor): Input Lorentz tensor.
 
         Returns:
-            torch.Tensor: Normalized tensor with the same shape as input.
+            torch.Tensor: RMS-normalized tensor in Lorentz space.
         """
         x_space = x[..., 1:]
         normed_space = F.rms_norm(x_space, (self.dim,), self.weight, self.eps)
