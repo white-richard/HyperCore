@@ -4,7 +4,7 @@ Example of using GIL for link prediction task on disease dataset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 from hypercore.manifolds import PoincareBall
 from hypercore.models import LPModel
 import argparse

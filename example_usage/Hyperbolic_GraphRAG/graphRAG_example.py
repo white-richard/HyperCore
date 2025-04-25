@@ -31,7 +31,7 @@ from hypercore.models import GRetriever
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 from hypercore.manifolds import Lorentz
 import os
 from torch_geometric.utils import to_dense_adj, remove_self_loops
@@ -330,12 +330,12 @@ def train(
     # Load dataset and create data loaders
     path = osp.dirname(osp.realpath(__file__))
     # if not cwq:
-    #     path = osp.join(path, '/home/nh478/palmer_scratch/HypLib/hyplib/datasets', 'WebQSPDataset')
+    #     path = osp.join(path, '/home/nh478/palmer_scratch/hypercore/hypercore/datasets', 'WebQSPDataset')
     #     train_dataset = WebQSPDataset(path, split='train')
     #     val_dataset = WebQSPDataset(path, split='val')
     #     test_dataset = WebQSPDataset(path, split='test')
     # else:
-    path = osp.join(path, '/home/nh478/palmer_scratch/HypLib/hyplib/datasets', 'CWQDataset')
+    path = osp.join(path, '/home/nh478/palmer_scratch/hypercore/hypercore/datasets', 'CWQDataset')
     train_dataset = CWQDataset(path, split='train')
     val_dataset = CWQDataset(path, split='val')
     test_dataset = CWQDataset(path, split='test')

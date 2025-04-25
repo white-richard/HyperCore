@@ -15,7 +15,7 @@ parser.add_argument('--type', type=str, default='graph')
 parser.add_argument('--use_adj_feat', type=bool, default=False)
 
 
-DATAPATH = 'hyplib/data/'
+DATAPATH = 'hypercore/data/'
 
 
 class Dataset(object):

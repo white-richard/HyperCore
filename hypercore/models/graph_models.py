@@ -10,7 +10,7 @@ from hypercore.utils.eval_utils import acc_f1, MarginLoss
 from hypercore.manifolds import Lorentz
 import networkx as nx
 import scipy.sparse as sp
-import hyplib.utils.distortions as dis
+import hypercore.utils.distortions as dis
 from geoopt.manifolds import PoincareBall
 
 class BaseModel(nn.Module):

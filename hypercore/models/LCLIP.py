@@ -14,13 +14,13 @@ import math
 import logging
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import os
 from hypercore.manifolds import Lorentz
 import re
 from collections import OrderedDict
 from torch.utils.checkpoint import checkpoint
-import hyplib.utils.distributed as dist
+import hypercore.utils.distributed as dist
 
 def get_rank() -> int:
     """Return rank of current process in the process group."""

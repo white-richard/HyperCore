@@ -9,7 +9,7 @@ import os
 from torch.optim import SGD, AdamW
 from hypercore.nn import LoraModel, LoraConfig
 from hypercore.models import LViT
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 from hypercore.manifolds import Lorentz
 import gc
 import random

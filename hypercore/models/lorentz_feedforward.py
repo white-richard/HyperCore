@@ -1,4 +1,4 @@
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import math
 import torch
 from torch import nn

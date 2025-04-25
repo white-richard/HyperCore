@@ -1,5 +1,5 @@
-import hyplib.utils
-import hyplib.nn
-import hyplib.manifolds
-import hyplib.models
-import hyplib.optimizers
+import hypercore.utils
+import hypercore.nn
+import hypercore.manifolds
+import hypercore.models
+import hypercore.optimizers

@@ -8,7 +8,18 @@ from hypercore.nn.graph_conv.gcn_conv import GCNConv
 
 class HGNNConv(nn.Module):
     """
-    HGNN layer.
+    Hyperbolic Graph Neural Network Convolution Layer (HGNNConv).
+
+    Args:
+        manifold (PoincareBall): Poincare Ball manifold instance.
+        in_features (int): Input feature dimensionality.
+        out_features (int): Output feature dimensionality.
+        dropout (float): Dropout probability.
+        act (callable): Activation function (applied inside GCN).
+        use_bias (bool): Whether to add a learnable bias.
+
+    Based on
+        - Hypergraph Neural Networks (https://arxiv.org/abs/1809.09401)
     """
 
     def __init__(self, manifold, in_features, out_features, dropout, act, use_bias):

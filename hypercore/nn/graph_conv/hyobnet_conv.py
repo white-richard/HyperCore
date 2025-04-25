@@ -5,7 +5,19 @@ from torch.nn.modules.module import Module
 from hypercore.nn.linear import HyboNetLinear
 class HybonetConv(nn.Module):
     """
-    Hyperbolic graph convolution layer.
+    Fully hyperbolic Graph Convolution Layer (HyboNetConv).
+    Args:
+        manifold: Lorentz manifold instance.
+        in_features (int): Input feature dimensionality.
+        out_features (int): Output feature dimensionality.
+        use_bias (bool): Whether to add a learnable bias in linear layer.
+        dropout (float): Dropout probability for linear projection.
+        use_att (bool): Whether to use attention during aggregation.
+        local_agg (bool): Whether to aggregate in local tangent spaces.
+        nonlin (callable, optional): Optional nonlinearity applied inside HyboNetLinear.
+
+    Based on:
+        - Fully Hyperbolic Neural Networks (https://arxiv.org/abs/2105.14686)
     """
 
     def __init__(self, manifold, in_features, out_features, use_bias, dropout, use_att, local_agg, nonlin=None):

@@ -4,7 +4,7 @@ Example of building a Lorentz BERT model
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import torch.nn.functional as F
 from hypercore.manifolds import Lorentz
 from torch.optim.lr_scheduler import MultiStepLR

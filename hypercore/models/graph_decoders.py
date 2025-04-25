@@ -1,5 +1,5 @@
 """Graph decoders."""
-import hyplib.manifolds as manifolds
+import hypercore.manifolds as manifolds
 import torch.nn as nn
 import torch.nn.functional as F
 

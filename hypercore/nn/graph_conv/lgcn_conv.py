@@ -9,6 +9,22 @@ from hypercore.nn.attention.sparse_dist import LorentzSparseSqDisAtt
 from hypercore.nn.linear import HypAct
 
 class LGCNConv(nn.Module):
+    """
+    Tangent-sapce based Lorentz Graph Convolution Layer (LGCNConv).
+
+    Args:
+        manifold_in: Input Lorentz manifold instance.
+        manifold_out: Output Lorentz manifold instance.
+        in_feature (int): Input feature dimension.
+        out_features (int): Output feature dimension.
+        dropout (float): Dropout probability.
+        act (callable): Activation function.
+        use_bias (bool): Whether to use bias in the linear layer.
+        use_att (bool): Whether to use attention in aggregation.
+
+    Based on:
+        - Lorentzian Graph Convolutional Networks (https://arxiv.org/abs/2104.07477)
+    """
     def __init__(self, manifold_in, manifold_out, in_feature, out_features, dropout, act, use_bias, use_att):
         super(LGCNConv, self).__init__()
         self.linear = LGCNLinear(manifold_in, in_feature, out_features, dropout, use_bias)

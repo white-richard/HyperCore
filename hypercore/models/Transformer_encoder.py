@@ -10,7 +10,7 @@ import math
 import logging
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import os
 from hypercore.manifolds import Lorentz
 import re

@@ -1,5 +1,5 @@
 
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import math
 from dataclasses import dataclass
 from typing import Tuple, Optional, Literal

@@ -5,7 +5,7 @@ from tqdm import tqdm
 from torchvision import datasets, transforms
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import torch.nn.functional as F
 from hypercore.manifolds import Lorentz
 import numpy as np

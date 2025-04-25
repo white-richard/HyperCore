@@ -4,7 +4,7 @@ Example of using skip-connected HyboNet for noce classification task on disease 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 from hypercore.manifolds import Lorentz
 from hypercore.models import NCModel
 import argparse

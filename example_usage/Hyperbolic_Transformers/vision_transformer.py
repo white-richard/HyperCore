@@ -5,7 +5,7 @@ from tqdm import tqdm
 from torchvision import datasets, transforms
 import torch
 import torch.nn as nn
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 import torch.nn.functional as F
 from hypercore.manifolds import Lorentz
 from torch.optim.lr_scheduler import MultiStepLR
@@ -174,8 +174,8 @@ def train():
                 transforms.Normalize((0.5074, 0.4867, 0.4411), (0.267, 0.256, 0.276)),
             ])
 
-    train_set = datasets.CIFAR10('hyplib/data', train=True, download=True, transform=train_transform)
-    test_set = datasets.CIFAR10('hyplib/data', train=False, download=True, transform=test_transform)
+    train_set = datasets.CIFAR10('hypercore/data', train=True, download=True, transform=train_transform)
+    test_set = datasets.CIFAR10('hypercore/data', train=False, download=True, transform=test_transform)
 
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, num_workers=8, pin_memory=True, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, num_workers=8, pin_memory=True, shuffle=False)

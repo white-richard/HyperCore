@@ -8,7 +8,21 @@ from hypercore.nn.linear.hnn_layers import HypAct, HypLinear
 
 class HGCNConv(nn.Module):
     """
-    Hyperbolic graph convolution layer.
+    Hyperbolic Graph Convolution Layer (HGCNConv).
+
+    Args:
+        manifold_in: Input manifold instance.
+        manifold_out: Output manifold instance.
+        in_features (int): Input feature dimensionality.
+        out_features (int): Output feature dimensionality.
+        dropout (float): Dropout rate.
+        act (callable): Activation function.
+        use_bias (bool): Whether to add bias in linear layer.
+        use_att (bool): Whether to use attention during aggregation.
+        local_agg (bool): Whether to use local tangent aggregation.
+
+    Based on:
+        - Hyperbolic Graph Convolutional Neural Networks (https://arxiv.org/abs/1910.12933)
     """
 
     def __init__(self, manifold_in, manifold_out, in_features, out_features, dropout, act, use_bias, use_att, local_agg):

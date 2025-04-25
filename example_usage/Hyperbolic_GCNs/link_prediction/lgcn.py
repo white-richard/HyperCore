@@ -4,7 +4,7 @@ Example of using LGCN for link prediction task on disease dataset, with varying 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import hyplib.nn as hnn
+import hypercore.nn as hnn
 from hypercore.manifolds import Lorentz
 from hypercore.models import LPModel
 import argparse

@@ -13,6 +13,25 @@ from hypercore.nn.linear.hnn_layers import HypLinear
 from hypercore.nn.linear.lorentz_linear import LorentzLinear
 
 class HGATConv(Module):
+    """
+    Hyperbolic Graph Attention Convolution (HGATConv).
+
+    Args:
+        manifold: Hyperbolic manifold (PoincareBall or Lorentz).
+        in_channels (int): Input feature dimension.
+        out_channels (int): Output feature dimension.
+        heads (int, optional): Number of attention heads. Default is 1.
+        concat (bool, optional): Whether to concatenate heads or average. Default is True.
+        negative_slope (float, optional): Negative slope for LeakyReLU. Default is 0.2.
+        dropout (float, optional): Dropout probability on attention coefficients. Default is 0.
+        use_bias (bool, optional): If True, add learnable bias. Default is True.
+        act (callable, optional): Activation function applied on output.
+        use_att (bool, optional): If True, use attention mechanism. Default is True.
+        dist (bool, optional): If True, use distance-aware attention weighting. Default is True.
+
+    Based on:
+        - Hyperbolic Graph Attention Network (https://arxiv.org/abs/1912.03046)
+    """
     def __init__(self,
                  manifold,
                  in_channels,
