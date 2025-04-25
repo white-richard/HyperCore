@@ -7,7 +7,18 @@ import math
 
 class HNNLayer(nn.Module):
     """
-    Hyperbolic neural networks layer.
+    Hyperbolic Neural Network Layer.
+    Args:
+        manifold: Manifold instance.
+        in_features (int): Input dimensionality.
+        out_features (int): Output dimensionality.
+        c (float): Curvature of the manifold.
+        dropout (float): Dropout rate.
+        act (callable): Activation function.
+        use_bias (bool): Whether to add a bias term.
+
+    Based on:
+        - HNN (https://arxiv.org/abs/1805.09112)
     """
 
     def __init__(self, manifold, in_features, out_features, c, dropout, act, use_bias):
@@ -22,7 +33,20 @@ class HNNLayer(nn.Module):
     
 class HypLinear(nn.Module):
     """
-    Hyperbolic linear layer.
+    Hyperbolic Linear Layer.
+
+    Applies a Möbius matrix-vector multiplication followed by optional bias addition
+    in hyperbolic space.
+
+    Args:
+        manifold: Manifold instance.
+        in_features (int): Input dimensionality.
+        out_features (int): Output dimensionality.
+        dropout (float): Dropout rate.
+        use_bias (bool): Whether to add a bias term.
+
+    Based on:
+        - HNN (https://arxiv.org/abs/1805.09112)
     """
 
     def __init__(self, manifold, in_features, out_features, dropout, use_bias):
@@ -60,7 +84,18 @@ class HypLinear(nn.Module):
 
 class HypAct(Module):
     """
-    Hyperbolic activation layer.
+    Hyperbolic Activation Layer.
+
+    Applies a standard activation function in the tangent space at the origin,
+    then reprojects back to the hyperbolic manifold.
+
+    Args:
+        manifold_in: Input manifold.
+        manifold_out: Output manifold.
+        act (callable): Activation function (e.g., ReLU, Tanh).
+
+    Based on:
+        - HNN (https://arxiv.org/abs/1805.09112)
     """
 
     def __init__(self, manifold_in, manifold_out, act):

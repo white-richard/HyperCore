@@ -5,19 +5,18 @@ import torch.nn.functional as F
 from hypercore.nn.linear import LorentzLinear
 from hypercore.nn.conv import LResNet
 
-class LorentzPositionEncoding(nn.Module):
+class LorentzRelativePosEncoding(nn.Module):
     """
-    Implements the position embedding layer proposed in Hypformer.
-    x: the original Euclidean input, lives in Euclidean space
-    y: a vector on the manifold that is some form of x embedded in hyperbolic space.
+    Implements the learned relative position embedding layer proposed in Hypformer, done via a linear layer and LResNet.
     
-    Parameters:
-    ___________
+    Args:
         manifold_in: Lorentz manifold, the manifold for the initial input
         in_channels: dimensionality of input + 1
         out_channels: dimensionality of embedding, same as y
         manifold_out: [Optional] Lorentz manifold, the manifold the embedding lives in. If None, will be the same as manifold_in
 
+    Based on:
+        - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
     """
         
     def __init__(self, manifold_in, in_channels, out_channels, manifold_out=None):

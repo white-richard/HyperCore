@@ -5,24 +5,17 @@ from hypercore.manifolds import PoincareBall
 class PoincareMLR(nn.Module):
     def __init__(self, manifold, c):
         """
-        The Poincare multinomial logistic regression (MLR) operation.
+        Poincare Multinomial Logistic Regression (MLR) Operator.
 
-        Parameters
-        ----------
-        x : tensor
-            contains input values
-        z : tensor
-            contains the hyperbolic vectors describing the hyperplane orientations
-        r : tensor
-            contains the hyperplane offsets
-        c : tensor
-            curvature of the Poincare disk
+        Computes signed distances from inputs to hyperplanes in the Poincare Ball,
+        based on the analytic distance formula adapted for hyperbolic space.
 
-        Returns
-        -------
-        tensor
-            signed distances of input w.r.t. the hyperplanes, denoted by v_k(x) in
-            the HNN++ paper
+        Args:
+            manifold (PoincareBall): Instance of the Poincare Ball manifold.
+            c (float): Curvature of the Poincare Ball.
+
+        Based on:
+            - HNN++ (https://arxiv.org/abs/2006.08210)
         """
         super(PoincareMLR, self).__init__()
         self.manifold = manifold

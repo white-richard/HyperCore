@@ -1,5 +1,9 @@
 '''
 Hyperbolic Layers that makes up hyperolic convolution
+
+Based on: 
+    - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
+    - Lorentzian Residual Neural Networks (https://arxiv.org/abs/2412.14695)
 '''
 import torch
 import torch.nn as nn

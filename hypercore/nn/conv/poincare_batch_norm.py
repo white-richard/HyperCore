@@ -8,7 +8,13 @@ class PoincareBatchNorm(nn.Module):
     Basic implementation of batch normalization in the Poincare ball model.
 
     Based on:
-        https://arxiv.org/abs/2003.00335
+        - Differentiating through the Fréchet Mean (https://arxiv.org/abs/2003.00335)
+        - Poincare ResNet (https://arxiv.org/abs/2303.14027)
+
+    Args:
+        manifold (PoincareBall): Poincare Ball manifold instance.
+        c (float): Curvature of the Poincare Ball.
+        features (int): Number of features (excluding batch dimension).
     """
 
     def __init__(
@@ -54,10 +60,16 @@ class PoincareBatchNorm(nn.Module):
 
 class PoincareBatchNorm2d(nn.Module):
     """
-    2D implementation of batch normalization in the Poincare ball model.
+    2D Batch Normalization on the Poincare Ball Model.
 
     Based on:
-        https://arxiv.org/abs/2003.00335
+        - Differentiating through the Fréchet Mean (https://arxiv.org/abs/2003.00335)
+        - Poincare ResNet (https://arxiv.org/abs/2303.14027)
+
+    Args:
+        manifold (PoincareBall): Poincare Ball manifold instance.
+        c (float): Curvature of the Poincare Ball.
+        features (int): Number of channels/features.
     """
 
     def __init__(

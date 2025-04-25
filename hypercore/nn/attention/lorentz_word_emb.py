@@ -10,10 +10,10 @@ import math
 class LorentzEmbeddings(nn.Module):
     """Words embeddings for encoder/decoder, includes positional embedding
     Additionally includes ability to add sparse input features
-    based on "Linguistic Input Features Improve Neural Machine Translation"
-    :cite:`sennrich2016linguistic`.
-    Adapted from "Fully hyperbolic neural networks" (chen2021fully)
-
+    
+    Based on 
+        - Linguistic Input Features Improve Neural Machine Translation
+        - Adapted from "Fully hyperbolic neural networks" 
 
     Args:
         manifold_in (Lorentz): manifold of the inputs

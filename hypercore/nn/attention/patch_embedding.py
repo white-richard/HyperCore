@@ -6,7 +6,15 @@ from hypercore.nn.conv import LorentzConv2d
 
 class LorentzPatchEmbedding(nn.Module):
     """
-    Implements Lorentz patch embedding using a Lorentz 2D convolutional layer.
+    Lorentz Patch Embedding using Lorentzian 2D Convolution.
+
+    Args:
+        manifold_in: Lorentz manifold instance for the input space.
+        image_size (int): Height (and width) of the input image. Assumes square images.
+        patch_size (int): Size of each square patch.
+        in_channel (int): Number of input channels.
+        out_channel (int): Number of output channels (patch embedding dimension).
+        manifold_out: Optional Lorentz manifold for the output space.
     """
         
     def __init__(self, manifold_in, image_size, patch_size, in_channel, out_channel, manifold_out=None):

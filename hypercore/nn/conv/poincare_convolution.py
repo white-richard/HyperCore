@@ -9,7 +9,23 @@ from hypercore.nn.conv import PoincareMLR
 
 
 class PoincareConvolution2d(nn.Module):
-    """Poincare 2 dimensional convolution layer"""
+    """
+    Poincare 2D Convolution Layer.
+
+    Based on:
+        - Poincare ResNet (https://arxiv.org/abs/2303.14027)
+
+    Args:
+        manifold (PoincareBall): Instance of the Poincare Ball manifold.
+        c (float): Curvature of the Poincare ball.
+        in_channels (int): Number of input channels (including time dimension if needed).
+        out_channels (int): Number of output channels.
+        kernel_dims (Tuple[int, int]): Height and width of convolutional kernels.
+        bias (bool, optional): If True, includes learnable bias. Default is True.
+        stride (int, optional): Stride of the sliding window. Default is 1.
+        padding (int, optional): Zero-padding added to both sides. Default is 0.
+        id_init (bool, optional): If True, uses identity initialization for weights.
+    """
 
     def __init__(
         self,
@@ -78,16 +94,13 @@ class PoincareConvolution2d(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass of the 2 dimensional convolution layer
+        Forward pass of the PoincareConvolution2d layer.
 
-        Parameters
-        ----------
-        x : tensor (height, width, batchsize, input channels)
-            contains the layer inputs
+        Args:
+            x (torch.Tensor): Input tensor of shape [batch_size, in_channels, height, width].
 
-        Returns
-        -------
-        tensor (height, width, batchsize, output channels)
+        Returns:
+            torch.Tensor: Output tensor of shape [batch_size, out_channels, out_height, out_width].
         """
         batch_size, height, width = x.size(0), x.size(2), x.size(3)
         out_height = (

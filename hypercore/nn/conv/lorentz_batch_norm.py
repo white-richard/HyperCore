@@ -2,7 +2,12 @@
 Lorentz Batch Normalization Layers.
 
 These modules implement batch normalization in Lorentzian (hyperbolic) geometry,
-using Lorentzian centroids and Fréchet variance for centering and scaling.
+using Lorentzian centroids and Fréchet variance for centering and scaling. 
+Optionally, can compute the batch norm om spatial coordiantes instead.
+
+Based on:
+    - Lorentzian Residual Neural Networks (https://arxiv.org/abs/2412.14695)
+    - Fully Hyperbolic Convolutional Neural Networks for Computer Vision (https://arxiv.org/abs/2303.15919)
 """
 
 import torch
@@ -109,7 +114,7 @@ class LorentzBatchNorm1d(LorentzBatchNorm):
         space_method (bool, optional): If True, apply Euclidean BatchNorm on spatial part.
         momentum (float, optional): Momentum for running statistics. Default is 0.1.
     """
-    def __init__(self, manifold_in: Lorentz, num_features: int, manifold_out=None, space_method=None, momentum=0.1):
+    def __init__(self, manifold_in: Lorentz, num_features: int, manifold_out=None, space_method=False, momentum=0.1):
         super(LorentzBatchNorm1d, self).__init__(manifold_in, num_features, manifold_out)
         if space_method:
             self.norm = nn.BatchNorm1d(num_features=num_features, momentum=momentum)
@@ -152,7 +157,7 @@ class LorentzBatchNorm2d(LorentzBatchNorm):
         space_method (bool, optional): If True, apply Euclidean BatchNorm on spatial part.
         momentum (float, optional): Momentum for running statistics. Default is 0.1.
     """
-    def __init__(self, manifold_in: Lorentz, num_channels: int, manifold_out=None, space_method=None, momentum=0.1):
+    def __init__(self, manifold_in: Lorentz, num_channels: int, manifold_out=None, space_method=False, momentum=0.1):
         super(LorentzBatchNorm2d, self).__init__(manifold_in, num_channels, manifold_out)
         self.space_method = space_method
         if space_method:

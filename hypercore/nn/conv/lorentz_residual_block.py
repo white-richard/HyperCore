@@ -19,8 +19,8 @@ def get_Conv2d(manifold_in, in_channels, out_channels, kernel_size, stride=1, pa
         manifold_out=manifold_out
     )
 
-def get_BatchNorm2d(manifold_in, num_channels, manifold_out=None):
-    return LorentzBatchNorm2d(manifold_in=manifold_in, num_channels=num_channels+1, manifold_out=manifold_out)
+def get_BatchNorm2d(manifold_in, num_channels, manifold_out=None, space_method=False, momentum=0.1):
+    return LorentzBatchNorm2d(manifold_in=manifold_in, num_channels=num_channels+1, manifold_out=manifold_out, space_method=space_method, momentum=momentum)
 
 def get_Activation(manifold_in, act=F.relu, manifold_out=None):
     return LorentzActivation(manifold_in, act, manifold_out)

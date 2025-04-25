@@ -1,3 +1,10 @@
+"""
+Lorentz convolutional layers
+
+Based on:
+    - Fully Hyperbolic Convolutional Neural Networks for Computer Vision (https://arxiv.org/abs/2303.15919)
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,12 +16,19 @@ from hypercore.nn.linear import LorentzLinear
 from hypercore.nn.conv.conv_util_layers import *
 
 class LorentzConv1d(nn.Module):
-    """ Implements a fully hyperbolic 1D convolutional layer using the Lorentz model.
+    """
+    Lorentzian 1D Convolution Layer using the Lorentz model of hyperbolic space.
 
     Args:
-        manifold: Instance of Lorentz manifold
-        in_channels, out_channels, kernel_size, stride, padding, bias: Same as nn.Conv1d
-        LFC_normalize: If Chen et al.'s internal normalization should be used in LFC 
+        manifold_in (Lorentz): Input Lorentz manifold.
+        in_channels (int): Number of input channels (including time dimension).
+        out_channels (int): Number of output channels (excluding time).
+        kernel_size (int): Width of the 1D convolutional kernel.
+        stride (int): Stride of the convolution. Default: 1.
+        padding (int): Zero-padding to apply on both sides. Default: 0.
+        bias (bool): If True, adds a learnable bias to output. Default: True.
+        normalize (bool): If True, applies LorentzNormalization after projection.
+        manifold_out (Lorentz, optional): Target manifold for output.
     """
     def __init__(
             self,
@@ -60,6 +74,16 @@ class LorentzConv1d(nn.Module):
             self.normalization = None
 
     def forward(self, x):
+        """
+        Forward pass of LorentzConv1d.
+
+        Args:
+            x (Tensor): Input tensor of shape [batch, length, channels].
+
+        Returns:
+            Tensor: Output tensor after Lorentz convolution.
+        """
+
         """ x has to be in channel-last representation -> Shape = bs x len x C """
         bsz = x.shape[0]
 
@@ -83,12 +107,20 @@ class LorentzConv1d(nn.Module):
 
 
 class LorentzConv2d(nn.Module):
-    """ Implements a fully hyperbolic 2D convolutional layer using the Lorentz model.
+    """
+    Lorentzian 2D Convolution Layer using the Lorentz model of hyperbolic space.
 
     Args:
-        manifold: Instance of Lorentz manifold
-        in_channels, out_channels, kernel_size, stride, padding, dilation, bias: Same as nn.Conv2d
-        normalize: whether to normalize the output of the convolutional layer 
+        manifold_in (Lorentz): Input Lorentz manifold.
+        in_channels (int): Number of input channels (including time).
+        out_channels (int): Number of output channels (excluding time).
+        kernel_size (int or tuple): Size of 2D convolutional kernel.
+        stride (int or tuple): Stride of the convolution. Default: 1.
+        padding (int or tuple): Amount of zero-padding. Default: 0.
+        dilation (int or tuple): Spacing between kernel elements. Default: 1.
+        bias (bool): If True, adds bias to the output. Default: True.
+        normalize (bool): Whether to apply LorentzNormalization after projection.
+        manifold_out (Lorentz, optional): Output manifold for projection.
     """
     def __init__(
             self,
@@ -165,6 +197,16 @@ class LorentzConv2d(nn.Module):
             self.linearized_kernel.linear.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, x):
+        """
+        Forward pass of LorentzConv2d.
+
+        Args:
+            x (Tensor): Input tensor with shape [batch, height, width, channels].
+
+        Returns:
+            Tensor: Output tensor of shape [batch, H_out, W_out, out_channels+1].
+        """
+
         """ x has to be in channel-last representation -> Shape = bs x H x W x C """
         bsz = x.shape[0]
         h, w = x.shape[1:3]
@@ -194,12 +236,20 @@ class LorentzConv2d(nn.Module):
         return out
 
 class LorentzConvTranspose2d(nn.Module):
-    """ Implements a fully hyperbolic 2D transposed convolutional layer using the Lorentz model.
+    """
+    Lorentzian Transposed 2D Convolution (a.k.a. Deconvolution) Layer.
 
     Args:
-        manifold: Instance of Lorentz manifold
-        in_channels, out_channels, kernel_size, stride, padding, output_padding, bias: Same as nn.ConvTranspose2d
-        LFC_normalize: If Chen et al.'s internal normalization should be used in LFC 
+        manifold_in (Lorentz): Input Lorentz manifold.
+        in_channels (int): Number of input channels (including time).
+        out_channels (int): Number of output channels (excluding time).
+        kernel_size (int or tuple): Size of the kernel.
+        stride (int or tuple): Stride size.
+        padding (int or tuple): Padding size.
+        output_padding (int or tuple): Padding added to the output shape.
+        bias (bool): Whether to include bias.
+        normalize (bool): Whether to apply normalization.
+        manifold_out (Lorentz, optional): Output manifold for projection.
     """
     def __init__(
             self, 
@@ -262,6 +312,16 @@ class LorentzConvTranspose2d(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward pass for LorentzConvTranspose2d.
+
+        Args:
+            x (Tensor): Input tensor [batch, height, width, channels].
+
+        Returns:
+            Tensor: Upsampled output tensor.
+        """
+
         """ x has to be in channel last representation -> Shape = bs x H x W x C """
         if self.stride[0] > 1 or self.stride[1] > 1:
             # Insert hyperbolic origin vectors between features

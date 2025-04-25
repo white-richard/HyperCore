@@ -1,7 +1,10 @@
 """
 LorentzMultiheadAttention module implements multi-head attention in Lorentzian geometry.
-It supports both full attention (hyperbolic self attention) and linear focused attention
-(approximate attention mechanism using Lorentz geometry).
+It supports both full attention (hyperbolic self attention) and linear focused attention.
+
+Based on:
+    - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
+    - Fully Hyperbolic Neural Networks (https://arxiv.org/abs/2105.14686)
 """
 
 import pdb

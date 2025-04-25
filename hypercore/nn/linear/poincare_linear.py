@@ -4,7 +4,23 @@ from hypercore.manifolds import PoincareBall
 # from hypercore.nn.conv import PoincareMLR
 
 class PoincareLinear(nn.Module):
-    """Poincare fully connected linear layer"""
+    """
+    Poincare Fully Connected Linear Layer.
+
+    Applies a hyperbolic linear transformation using Möbius matrix operations
+    in the Poincare Ball model.
+
+    Args:
+        manifold (PoincareBall): Instance of the Poincare Ball manifold.
+        c (float): Curvature of the Poincare Ball.
+        in_features (int): Dimensionality of input features.
+        out_features (int): Dimensionality of output features.
+        use_bias (bool, optional): If True, includes a learnable bias. Default is True.
+        id_init (bool, optional): If True, initialize weights as scaled identity. Default is True.
+
+    Based on:
+        - HNN++ (https://arxiv.org/abs/2006.08210)
+    """
 
     def __init__(
         self,

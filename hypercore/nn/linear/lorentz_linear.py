@@ -6,7 +6,21 @@ import math
 from hypercore.manifolds import Lorentz
 class LorentzLinear(nn.Module):
     """
-    Fully hyperbolic Lorentz layer that allows for varying curvature
+    Fully hyperbolic Lorentz Linear Layer with variable curvature
+
+    Applies a hyperbolic linear transformation followed by projection back onto
+    the Lorentz manifold, supporting curvature variation and optional multi-head structure.
+
+    Args:
+        manifold_in (Lorentz): Input Lorentz manifold.
+        in_features (int): Input feature dimensionality (excluding time coordinate).
+        out_features (int): Output feature dimensionality (excluding time coordinate).
+        bias (bool, optional): If True, adds a learnable bias term. Default is True.
+        manifold_out (Lorentz, optional): Output Lorentz manifold for projection.
+        num_heads (int, optional): Number of output heads (e.g., for multi-head attention). Default is 1.
+
+    Based on:
+        - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
     """
 
     def __init__(self, manifold_in: Lorentz, in_features, out_features, bias=True, manifold_out=None, num_heads=1):

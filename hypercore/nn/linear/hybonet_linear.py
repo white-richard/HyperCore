@@ -3,6 +3,25 @@ import torch.nn as nn
 import math
 
 class HyboNetLinear(nn.Module):
+    """
+    HyboNet Linear Layer.
+
+    Projects input features through a linear transformation, applies optional nonlinearity,
+    dropout, and rescales outputs to satisfy Lorentzian hyperbolic geometry constraints.
+
+    Args:
+        manifold: Lorentzian manifold instance.
+        in_features (int): Dimensionality of input features.
+        out_features (int): Dimensionality of output features.
+        bias (bool, optional): If True, adds bias to linear transformation. Default is True.
+        dropout (float, optional): Dropout probability before linear projection. Default is 0.1.
+        scale (float, optional): Initial scale factor for the time coordinate. Default is 10.
+        fixscale (bool, optional): If True, scale is fixed during training. Default is False.
+        nonlin (callable, optional): Optional activation function applied before linear layer.
+
+    Based on:
+        - Fully Hyperbolic Neural Networks (https://arxiv.org/abs/2105.14686)
+    """
     def __init__(self,
                  manifold,
                  in_features,

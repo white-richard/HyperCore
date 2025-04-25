@@ -5,9 +5,26 @@ import math
 from hypercore.manifolds import Lorentz
 
 class LorentzCLS(nn.Module):
-    '''
-    same as lorentz decoder
-    '''
+    """
+    Lorentzian Classification Layer (CLS).
+
+    This module learns a set of class embeddings in the Lorentz model
+    and computes either negative distances, probabilities, or negative log-probabilities
+    for classification.
+
+    Same as lorentz decoder in graph_conv if negative distance
+
+    Args:
+        manifold (Lorentz): Lorentz manifold instance.
+        in_channels (int): Input feature dimension (excluding Lorentzian time coordinate).
+        out_channels (int): Number of output classes.
+        bias (bool, optional): Whether to include learnable bias. Default is True.
+
+    Based on:
+        - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
+        - Fully Hyperbolic Neural Networks (https://arxiv.org/abs/2105.14686)
+    """
+
     def __init__(self, manifold: Lorentz, in_channels, out_channels, bias=True):
         super().__init__()
         self.manifold = manifold

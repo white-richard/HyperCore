@@ -8,6 +8,30 @@ import torch.nn.functional as F
 from torch.nn.modules.module import Module
 
 class GILConv(nn.Module):
+    """
+    Geometric Interactive Learning Convolution (GILConv).
+
+    Applies both hyperbolic and Euclidean GAT-style convolutions on input features,
+    followed by a fusion of representations from both spaces.
+
+    Args:
+        manifold: Lorentzian or Poincare manifold object.
+        in_features (int): Number of input features.
+        out_features (int): Number of output features.
+        act: Activation function.
+        heads (int, optional): Number of attention heads. Default is 1.
+        concat (bool, optional): Whether to concatenate or average heads. Default is True.
+        negative_slope (float, optional): Negative slope for LeakyReLU. Default is 0.2.
+        dropout (float, optional): Dropout rate. Default is 0.
+        use_bias (bool, optional): Whether to use bias in linear layers. Default is True.
+        use_att (bool, optional): Whether to use attention mechanism. Default is True.
+        dist (bool, optional): Whether to use distance-based attention. Default is True.
+        e_fusion_dropout (float, optional): Dropout rate for Euclidean fusion. Default is 0.0.
+        h_fusion_dropout (float, optional): Dropout rate for hyperbolic fusion. Default is 0.0.
+
+    Based on:
+        - Graph Geometric Interactive Learning (https://arxiv.org/abs/2010.12135)
+    """
     def __init__(self, manifold, in_features, out_features, act, heads=1, concat=True, 
                     negative_slope=0.2, dropout=0, use_bias=True, use_att=True, dist=True, e_fusion_dropout=0.0, h_fusion_dropout=0.0):
         super(GILConv, self).__init__()

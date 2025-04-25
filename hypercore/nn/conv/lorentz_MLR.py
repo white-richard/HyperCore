@@ -1,3 +1,10 @@
+"""
+Lorentz Multinomial Logistic Regression (MLR) module.
+
+Based on:
+    - Fully Hyperbolic Convolutional Neural Networks for Computer Vision (https://arxiv.org/abs/2303.15919)
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
