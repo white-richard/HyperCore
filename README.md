@@ -30,7 +30,7 @@ In this quick start guide, we highlight the ease of creating and training a hype
 ### Creating Your Own Hyperbolic Transformer Encoder Block
 In the first glimpse of HyperCore, we build the encoder block of a hyperbolic Transformer, using hyperbolic-tailored modules such as [LorentzMultiheadAttention](hypercore/nn/attention/lorentz_former_conv.py) for multiple attention and [LResNet](hypercore/nn/conv/conv_util_layers.py) for residual connection. 
 
-<pre><code>```
+```python
 import torch
 import torch.nn as nn
 import hypercore.nn as hnn
@@ -60,7 +60,7 @@ class LTransformerBlock(nn.Module):
         x = self.res1(x, ax)
         x = self.res2(x, self.mlp(self.ln_2(x)))
         return x
-``` </code></pre>
+```
 
 For more examples of how to employ hyperbolic foundation model counponents in downstream tasks, please see [example usages](example_usage)
 
