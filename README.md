@@ -64,6 +64,101 @@ class LTransformerBlock(nn.Module):
 
 For more examples of how to employ hyperbolic foundation model counponents in downstream tasks, please see [example usages](example_usage)
 
+### Training a Hyperbolic Vision Transformer
+Let's take a quick look at how to easily train a pre-built hyperbolic foundation model with HyperCore, by looking at an example of training a Lorentzian vision Transformer (LViT, see [our paper](https://arxiv.org/abs/2504.08912) for more details) on classifying images in the CIFAR10 dataset. 
+
+In particular, since hyperbolic parameters require special update rules (see [here](https://arxiv.org/abs/1810.00760) for more details), HyperCore automatically sets up the optimizers to update Euclidean and hyperbolic parameters. Additionally, we can use separate optimization schemes for parameters on different manifolds. 
+
+Functionalities like these make it seemless to transition from training Euclidean foundation models to hyperbolic ones.
+
+```python
+from torchvision import datasets, transforms
+import torch
+from hypercore.manifolds import Lorentz
+from hypercore.optimizers import Optimizer, LR_Scheduler
+from hypercore.models import LViT
+import numpy as np
+
+# prepare the dataset as usual
+train_transform=transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5074, 0.4867, 0.4411), (0.267, 0.256, 0.276)),
+        ])
+
+test_transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5074, 0.4867, 0.4411), (0.267, 0.256, 0.276)),
+        ])
+
+train_set = datasets.CIFAR10('hypercore/data', train=True, download=True, transform=train_transform)
+test_set = datasets.CIFAR10('hypercore/data', train=False, download=True, transform=test_transform)
+
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=64, num_workers=8, pin_memory=True, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test_set, batch_size=64, num_workers=8, pin_memory=True, shuffle=False)
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+# Initiate the hyperbolic manifold with curvature -1.0
+manifold = Lorentz(1.0)
+model = LViT(manifold_in=manifold, manifold_hidden=manifold, manifold_out=manifold).to(device)
+
+# Initiate the optimizers. Note that we have separate optimizers for Euclidean and hyperbolic parameters
+optimizer = Optimizer(model, euc_optimizer_type='adamW', euc_lr=1e-4, euc_weight_decay=1e-2, hyp_optimizer_type='radam', hyp_lr=1e-4, 
+    hyp_weight_decay=1e-4, stabilize=1)
+
+# Initiate the learning rate scheduler for each optimizers
+lr_scheduler = LR_Scheduler(optimizer_euc=optimizer.optimizer[0], euc_lr_reduce_freq=30, euc_gamma=0.1, hyp_gamma=0.1, hyp_lr_reduce_freq=30, optimizer_hyp=optimizer.optimizer[1])
+
+criterion = torch.nn.CrossEntropyLoss()
+for epoch in range(0, 300):
+        model.train()
+        losses = []
+        acc1 = []
+        acc5 = []
+
+        for i, (x, y) in tqdm(enumerate(train_loader)):
+            x = x.to(device)
+            y = y.to(device)
+            logits = model(x)
+            loss = criterion(logits, y)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+# Function to calcuate top-k classification accuracy 
+@torch.no_grad()
+def accuracy(output, target, topk=(1,)):
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
+        res.append(correct_k.mul_(100.0 / batch_size))
+
+model.eval()
+acc1 = []
+acc5 = []
+
+for i, (x, y) in enumerate(test_loader):
+    x = x.to(device)
+    y = y.to(device)
+    logits = model(x)
+    top1, top5 = accuracy(logits, y, topk=(1, 5))
+    acc1.append(top1.item(), x.shape[0])
+    acc5.append(top5.item(), x.shape[0])
+
+acc1_test = np.mean(acc1)
+acc5_test = np.mean(acc5)
+print("Results: Acc@1={:.4f}, Acc@5={:.4f}".format(acc1_test, acc5_test))
+```
+
 ## Library Overview
 
 ## Implemented Modules and Details
