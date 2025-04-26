@@ -18,12 +18,6 @@ from collections import OrderedDict
 from torch.utils.checkpoint import checkpoint
 
 class _LTransformerBlock(nn.Module):
-    """
-    Single transformer block comprising multi-head self-attention and MLP, in hyperbolic space. Both
-    modules are preceeding by hyperbolic layer normalization. This module is the hyperbolic person of PyTorch's
-    builtin module `TransformerEncoderLayer` with arguments as (`norm_first=True, dropout=0, activation="gelu"`).
-    """
-
     def __init__(self, manifold, d_model: int, n_head: int):
         super().__init__()
         dim_per_head = d_model // n_head
@@ -52,12 +46,6 @@ class _LTransformerBlock(nn.Module):
 
 
 class LTransformerEncoder(nn.Module):
-    """
-    Text encoder using multiple layers of transformer encoder blocks. It accepts
-    tokenized text sequences, passes them through word/position embedding layers
-    and further processes them through transformer layers.
-    """
-
     def __init__(
         self,
         manifold_in: Lorentz, 
@@ -75,9 +63,6 @@ class LTransformerEncoder(nn.Module):
                 layer, 512 width, 8 heads. Width of MLP will always be `4 * W`,
                 per transformer paper. `A` is optional and will default to
                 (`A = H/64`) per transformer paper.
-            vocab_size: Number of tokens in the output vocabulary.
-            context_length: Maximum length of input captions; this is used to
-                create a fixed positional embedding lookup table.
         """
         super().__init__()
         self.vocab_size = vocab_size
@@ -95,10 +80,6 @@ class LTransformerEncoder(nn.Module):
         _attn = re.search(r"A(\d+)", arch)
         self.heads = int(_attn.group(1)) if _attn else self.width // 64
 
-        # Input sequences in forward pass will be right padded with zeroes.
-        # `nn.Embedding` has a `padding_idx` argument to set their embedding as
-        # zero. However, since the blocks are uni-directional, they will never
-        # receive gradients for padded positions.
         self.token_embed = hnn.LorentzEmbeddings(manifold_in, vocab_size, self.width, manifold_out=manifold_hidden) #this step automatically adds the positional embedding
 
         # Make a sequential module of transformer encoder blocks.
@@ -126,11 +107,6 @@ class LTransformerEncoder(nn.Module):
             nn.init.normal_(block.mlp[2].linear.weight, std=out_proj_std)
 
     def forward(self, text_tokens: torch.Tensor) -> torch.Tensor:
-        """
-        Obtain features of input text tokens by passing them through transformer
-        blocks. All self-attention layers only attend to past token (left side).
-        """
-
         max_len = text_tokens.shape[-1]
         _attn_mask = self.attn_mask[:max_len, :max_len]
 

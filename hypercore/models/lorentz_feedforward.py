@@ -1,10 +1,10 @@
-import hypercore.nn as hnn
+import hyplib.nn as hnn
 import math
 import torch
 from torch import nn
 import torch.nn.functional as F
 
-from hypercore.manifolds import Lorentz
+from hyplib.manifolds import Lorentz
 
 class LorentzFeedForward(nn.Module):
     """
@@ -33,9 +33,8 @@ class LorentzFeedForward(nn.Module):
         self.c = manifold.c
         self.w1 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1)
         self.w2 = hnn.LorentzLinear(self.manifold, inter_dim, dim - 1)
-        self.w3 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1)
-
-        self.act = hnn.LorentzActivation(self.manifold, F.silu)
+        self.w3 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1)      
+        # self.act = hnn.LorentzActivation(self.manifold, F.silu)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -49,7 +48,7 @@ class LorentzFeedForward(nn.Module):
         """
 
         #TODO: think about this, should we just write a meta function that's like hyp function for space-like dimension???
-        x1_time = self.act(self.w1(x))[..., 1:]
+        x1_time = F.silu((self.w1(x))[..., 1:])
         x3_time = self.w3(x)[..., 1:]
         x_space = x1_time * x3_time
         x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()

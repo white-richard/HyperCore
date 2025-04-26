@@ -70,7 +70,7 @@ model = LViT(manifold_in, manifold_hidden, manifold_out)
 
 # Load model checkpoint if exists
 output_dir = '...'
-checkpoint_epoch = 95
+checkpoint_epoch = 200
 model_checkpoint = os.path.join(output_dir, f"checkpoint_epoch_{checkpoint_epoch}.pth")
 
 if os.path.isfile(model_checkpoint):
