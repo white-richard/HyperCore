@@ -6,7 +6,7 @@ We provide the core modules and functionalities that makes this process simple f
 
 
 - [Library Highlights](#library-highlights)
-- [Quick Start: Build Hyperbolic Foundation Models](#quick start:-build-hyperbolic-foundation-models)
+- [Quick Start: Build Hyperbolic Foundation Models](#quick-start:-build-hyperbolic-foundation-models)
 ## Library Highlights
 
 ## Quick Start: Build Hyperbolic Foundation Models
