@@ -26,7 +26,43 @@ pip install -r requirements.txt
 Installation via pip directly is ***coming soon...***
 
 ## Quick Start: Build Hyperbolic Foundation Models
+In this quick start guide, we highlight the ease of creating and training a hyperbolic foudnation model model with HyperCore.
+### Creating Your Own Hyperbolic Transformer Encoder Block
+In the first glimpse of HyperCore, we build the encoder block of a hyperbolic Transformer, using hyperbolic-tailored modules such as [LorentzMultiheadAttention](hypercore/nn/attention/lorentz_former_conv.py) for multiple attention and [LResNet](hypercore/nn/conv/conv_util_layers.py) for residual connection. 
 
+<pre><code>```
+import torch
+import torch.nn as nn
+import hypercore.nn as hnn
+
+class LTransformerBlock(nn.Module):
+    def __init__(self, manifold, d_model: int, n_head: int):
+        super().__init__()
+        dim_per_head = d_model // n_head
+        out_dim = d_model - 1
+        mlp_dim = d_model * 4 - 1
+        self.manifold = manifold
+        self.attn = hnn.LorentzMultiheadAttention(manifold, dim_per_head, dim_per_head, n_head, attention_type='full', trans_heads_concat=True)
+        self.ln_1 = hnn.LorentzLayerNorm(manifold, out_dim)
+        self.mlp = nn.Sequential(
+            hnn.LorentzLinear(manifold, d_model, mlp_dim),
+            hnn.LorentzActivation(manifold, activation=nn.GELU()),
+            hnn.LorentzLinear(manifold, mlp_dim+1, out_dim),
+        )
+        self.ln_2 = hnn.LorentzLayerNorm(manifold, out_dim)
+        self.res1 = hnn.LResNet(manifold, use_scale=True)
+        self.res2 = hnn.LResNet(manifold, use_scale=True)
+
+    def forward(self, x, attn_mask=None):
+        # x: embedded features matrix of shape [batch, seq_len, dim_per_head * num_heads]
+        lx = self.ln_1(x)
+        ax = self.attn(lx, lx, mask=attn_mask)
+        x = self.res1(x, ax)
+        x = self.res2(x, self.mlp(self.ln_2(x)))
+        return x
+``` </code></pre>
+
+For more examples of how to employ hyperbolic foundation model counponents in downstream tasks, please see [example usages](example_usage)
 
 ## Library Overview
 
