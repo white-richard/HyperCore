@@ -160,6 +160,14 @@ print("Results: Acc@1={:.4f}, Acc@5={:.4f}".format(acc1_test, acc5_test))
 ```
 
 ## Framework Overview
+HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. 
+
+- **Hyperbolic manifold and optimizers:** 
+- **Hyperbolic Modules and Layers**
+- **Hyperbolic Neural Networks**
+- **Hyperbolic Foundation Models**
+- **Downstream Tasks Support**
+
 ![Framework Snapshot](assets/snapshot.png)
 
 ## Implemented Modules and Details
