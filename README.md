@@ -166,9 +166,9 @@ HyperCore is a framework that supports constructing, developing, and evaluating 
 
 - **Hyperbolic manifold and optimizers:** These are essential building blocks of training any hyperbolic foundation model. HyperCore builds on top of the well-optimized manifolds and optimizers of [Geoopt](https://github.com/geoopt/geoopt). HyperCore extends the manifolds to incoporate more fundamental operations, e.g. [hyperbolic entailment cones](https://arxiv.org/abs/2304.09172). The optimizers also allow for seemless transition to hyperbolic training schemes (see the [above section](#training-a-hyperbolic-vision-transformer)).
 - **Hyperbolic Modules and Layers:** HyperCore implemented an extensive list of modules and layers from current research to support building both existing and new hyperbolic foundation models. Additionally, novel hyperbolic modules were developed specifically for HyperCore for building hyperbolic foundation models, such as performing hyperbolic RoPE through pseudo Lorentzian rotations. 
-- **Hyperbolic Neural Networks:**
-- **Hyperbolic Foundation Models:**
-- **Downstream Tasks Support:**
+- **Lower-level Hyperbolic Models:** HyperCore supports building building-block hyperbolic neural networks (e.g. GNNs, CNNs, etc) and hyperbolic foundation models (e.g. ViT and Tranformer), implemented in [models](hypercore/models) with examples in [example_usage](example_usage).
+- **Higher-level Hyperbolic Models:** With the lower-level hyperbolic models, HyperCore also supports building higher-level hyperbolic foundation models, such as fully hyperbolic CLIP models, hyperbolic GraphRAG models, and hyperbolic fine-tuning. These are implemented in in [models](hypercore/models) with examples in [example_usage](example_usage).
+- **Downstream Tasks Support:** 
 
 ![Framework Snapshot](assets/snapshot.png)
 
