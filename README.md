@@ -177,14 +177,16 @@ HyperCore implements the following list of hyperbolic modules and layers:
 
 <details>
 <summary>Manifolds and Pptimizers (click to expand)</summary>
-- Lorentz hyperboloid and Poincare Ball model, based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
-- Riemannian Adam and SGD optimizers [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760)
+
+- Lorentz hyperboloid ([source code](hypercore/manifolds/lorentzian.py)) and Poincare Ball model ([source code](hypercore/manifolds/poincare.py)), based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
+- Riemannian Adam ([source code](hypercore/optimizers/radam.py)) and SGD ([source code](hypercore/optimizers/rsgd.py)) optimizers from [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760), based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
 </details>
 
 <details>
 <summary>Hyperbolic Linear Layers(click to expand)</summary>
-- HyboNet linear layer [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
-- Hypformer linear layer [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Tangent-space-based linear layer [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
-- Poincare linear layer [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
+
+- HyboNet linear layer [source code](hypercore/nn/linear/hybonet_linear.py) [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- Hypformer linear layer [source code](hypercore/nn/linear/lorentz_linear.py) [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Tangent-space-based linear layer [source code](hypercore/nn/linear/hnn_layers.py) [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
+- Poincare linear layer [source code](hypercore/nn/linear/poincare_linear.py) [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
 </details>

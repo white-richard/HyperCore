@@ -31,23 +31,10 @@ class Lorentz(LorentzOri):
         self.c = self.k
 
     def l_inner(self, x, y, keep_dim=False, dim=-1):
-        # input shape [node, features]
-        # d = x.size(-1) - 1
-        # xy = x * y
-        # xy = torch.cat((-xy.narrow(1, 0, 1), xy.narrow(1, 1, d)), dim=1)
-        # return torch.sum(xy, dim=1, keepdim=keep_dim)
         return math._inner(x, y, keep_dim, dim)
     
 
     def sqdist(self, x, y, norm_control=True):
-        # K = 1. / self.c
-        # prod = self.l_inner(x, y)
-        # eps = {torch.float32: 1e-7, torch.float64: 1e-15}
-        # theta = torch.clamp(-prod / K, min=1.0 + eps[x.dtype])
-        # sqdist = K * arcosh(theta) ** 2
-        # if not norm_control:
-        #     return sqdist
-        # return torch.clamp(sqdist, max=50.0)
         return self.lorentzian_distance(x, y)
 
     def induced_distance(self, x, y):
