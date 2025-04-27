@@ -162,14 +162,29 @@ print("Results: Acc@1={:.4f}, Acc@5={:.4f}".format(acc1_test, acc5_test))
 ```
 
 ## Framework Overview
-HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. 
+HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. See framework snapshot for visual organization. 
 
 - **Hyperbolic manifold and optimizers:** These are essential building blocks of training any hyperbolic foundation model. HyperCore builds on top of the well-optimized manifolds and optimizers of [Geoopt](https://github.com/geoopt/geoopt). HyperCore extends the manifolds to incoporate more fundamental operations, e.g. [hyperbolic entailment cones](https://arxiv.org/abs/2304.09172). The optimizers also allow for seemless transition to hyperbolic training schemes (see the [above section](#training-a-hyperbolic-vision-transformer)).
 - **Hyperbolic Modules and Layers:** HyperCore implemented an extensive list of modules and layers from current research to support building both existing and new hyperbolic foundation models. Additionally, novel hyperbolic modules were developed specifically for HyperCore for building hyperbolic foundation models, such as performing hyperbolic RoPE through pseudo Lorentzian rotations. 
 - **Lower-level Hyperbolic Models:** HyperCore supports building building-block hyperbolic neural networks (e.g. GNNs, CNNs, etc) and hyperbolic foundation models (e.g. ViT and Tranformer), implemented in [models](hypercore/models) with examples in [example_usage](example_usage).
 - **Higher-level Hyperbolic Models:** With the lower-level hyperbolic models, HyperCore also supports building higher-level hyperbolic foundation models, such as fully hyperbolic CLIP models, hyperbolic GraphRAG models, and hyperbolic fine-tuning. These are implemented in in [models](hypercore/models) with examples in [example_usage](example_usage).
-- **Downstream Tasks Support:** 
+- **Downstream Tasks Support:** Many hyperbolic operations for downstream tasks are also implemented, such as hyperbolic loss functions.
 
 ![Framework Snapshot](assets/snapshot.png)
 
 ## Implemented Modules and Details
+HyperCore implements the following list of hyperbolic modules and layers:
+
+<details>
+<summary>Manifolds and Pptimizers (click to expand)</summary>
+- Lorentz hyperboloid and Poincare Ball model, based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
+- Riemannian Adam and SGD optimizers [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760)
+</details>
+
+<details>
+<summary>Hyperbolic Linear Layers(click to expand)</summary>
+- HyboNet linear layer [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- Hypformer linear layer [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Tangent-space-based linear layer [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
+- Poincare linear layer [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
+</details>
