@@ -208,5 +208,42 @@ HyperCore implements the following list of hyperbolic modules and layers:
 <details>
 <summary>Hyperbolic Convolutional & Residual Layers(click to expand)</summary>
 
-- Fully hyperbolic Lorentzian convolution layer 
+- Fully hyperbolic Lorentzian convolution layer [source code](hypercore/nn/conv/lorentz_convolution.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919), modified based on linear layer from Hypformer (Yang et al.,)
+- Poincare convolution layer [source code](hypercore/nn/conv/poincare_convolution.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- Fully hyperbolic Lorentzian residual layer (LResNet) [source code](hypercore/nn/conv/conv_util_layers.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
+- Parallel-transport-space-based residual layer [source code](hypercore/nn/linear/hnn_layers.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+</details>
+
+<details>
+<summary>Hyperbolic Normalization & Pooling Layers(click to expand)</summary>
+
+- Lorentzian batch normalization from [source code](hypercore/nn/conv/poincare_batch_norm.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
+- Poincare batch normalization from [source code](hypercore/nn/conv/poincare_batch_norm.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- Fully hyperbolic Lorentzian layer normalization [source code](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Fully hyperbolic Lorentzian batch normalization [source code](hypercore/nn/conv/lorentz_batch_norm.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
+- Fully hyperbolic Lorentzian global pooling layer [source code](hypercore/nn/conv/lorentz_pooling.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
+</details>
+
+<details>
+<summary>Hyperbolic Attention Mechanism and Transformer-related Modules(click to expand)</summary>
+
+- Lorentzian self-attention layer [source code](hypercore/nn/attention/lorentz_former_conv.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686), modified based on linear layer from Hypformer (Yang et al.,)
+- Lorentzian linear attention layer [source code](hypercore/nn/attention/lorentz_former_conv.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Poincare self-attention layer [source code](hypercore/nn/attention/poincare_attention.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- Lorentzian word embedding [source code](hypercore/nn/attention/lorentz_word_emb.py). Developed for HyperCore, optionally allows for positional encoding enalbed by LResNet (He et al.,)
+- Lorentzian patch embedding [source code](hypercore/nn/attention/patch_embedding.py). Developed for HyperCore, based on Lorentzian convolutional layer from HCNN (Bdeir et al.,)
+- Lorentzian RoPE mechanism [source code](hypercore/nn/attention/lorentz_former_conv.py). Developed for HyperCore, based on pseudo Lorentzian rotation, incoporated into Lorentzian self-attention layers
+- Lorentzian relative positional encoding [source code](hypercore/nn/attention/positional_encoding.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+</details>
+
+<details>
+<summary>Hyperbolic Graph and Neighborhood Aggregation(click to expand)</summary>
+
+- HGCN GCN layer [source code](hypercore/nn/graph_conv/hgcn_conv.py) from Chami et al., [Hyperbolic Graph Convolutional Neural Networks](https://arxiv.org/abs/1910.12933)
+- HGNN GNN layer [source code](hypercore/nn/graph_conv/hgnn_conv.py) from Liu et al., [Hyperbolic Graph Neural Networks](https://arxiv.org/abs/1910.12892)
+- HyboNet GCN layer [source code](hypercore/nn/graph_conv/hyobnet_conv.py) from from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- HGAT GAT layer [source code](hypercore/nn/graph_conv/hgat_conv.py) from Zhang et al., [Hyperbolic Graph Attention Network](https://arxiv.org/abs/1912.03046)
+- LGCN GCN layer [source code](hypercore/nn/graph_conv/lgcn_conv.py) from Zhang et al., [Lorentzian Graph Convolutional Networks](https://arxiv.org/abs/2104.07477)
+- H2HGCN GCN layer [source code](hypercore/nn/graph_conv/h2h_conv.py) from Dai et al., [A Hyperbolic-to-Hyperbolic Graph Convolutional Network](https://arxiv.org/abs/2104.06942)
+- GIL GAT layer [source code](hypercore/nn/graph_conv/gil_conv.py) from Zhu et al., [Graph Geometry Interaction Learning](https://arxiv.org/abs/2010.12135)
 </details>
