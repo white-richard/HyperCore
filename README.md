@@ -71,6 +71,8 @@ In particular, since hyperbolic parameters require special update rules (see [he
 
 Functionalities like these make it seemless to transition from training Euclidean foundation models to hyperbolic ones.
 
+![LViT Module Architecture](assets/HViT.png)
+
 ```python
 from torchvision import datasets, transforms
 import torch
@@ -162,8 +164,8 @@ print("Results: Acc@1={:.4f}, Acc@5={:.4f}".format(acc1_test, acc5_test))
 ## Framework Overview
 HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. 
 
-- **Hyperbolic manifold and optimizers:** These are essential building blocks of training any hyperbolic foundation model. HyperCore builds on top of the well-optimized manifolds and optimizers of [Geoopt](https://github.com/geoopt/geoopt). HyperCore extends the manifolds to incoporate more fundamental operations, e.g. [hyperbolic entailment cones](https://arxiv.org/abs/2304.09172). The optimizers also allow for more seemless transition to hyperbolic training schemes (see the [above section](#training-a-hyperbolic-vision-transformer)).
-- **Hyperbolic Modules and Layers:** 
+- **Hyperbolic manifold and optimizers:** These are essential building blocks of training any hyperbolic foundation model. HyperCore builds on top of the well-optimized manifolds and optimizers of [Geoopt](https://github.com/geoopt/geoopt). HyperCore extends the manifolds to incoporate more fundamental operations, e.g. [hyperbolic entailment cones](https://arxiv.org/abs/2304.09172). The optimizers also allow for seemless transition to hyperbolic training schemes (see the [above section](#training-a-hyperbolic-vision-transformer)).
+- **Hyperbolic Modules and Layers:** HyperCore implemented an extensive list of modules and layers from current research to support building both existing and new hyperbolic foundation models. Additionally, novel hyperbolic modules were developed specifically for HyperCore for building hyperbolic foundation models, such as performing hyperbolic RoPE through pseudo Lorentzian rotations. 
 - **Hyperbolic Neural Networks:**
 - **Hyperbolic Foundation Models:**
 - **Downstream Tasks Support:**
