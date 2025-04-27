@@ -178,15 +178,35 @@ HyperCore implements the following list of hyperbolic modules and layers:
 <details>
 <summary>Manifolds and Pptimizers (click to expand)</summary>
 
-- Lorentz hyperboloid ([source code](hypercore/manifolds/lorentzian.py)) and Poincare Ball model ([source code](hypercore/manifolds/poincare.py)), based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
-- Riemannian Adam ([source code](hypercore/optimizers/radam.py)) and SGD ([source code](hypercore/optimizers/rsgd.py)) optimizers from [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760), based on [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
+- Lorentz hyperboloid ([source code](hypercore/manifolds/lorentzian.py)) and Poincare Ball model ([source code](hypercore/manifolds/poincare.py)), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
+- Riemannian Adam ([source code](hypercore/optimizers/radam.py)) and SGD ([source code](hypercore/optimizers/rsgd.py)) optimizers from Bécigneul et al., [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
 </details>
 
 <details>
 <summary>Hyperbolic Linear Layers(click to expand)</summary>
 
-- HyboNet linear layer [source code](hypercore/nn/linear/hybonet_linear.py) [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
-- Hypformer linear layer [source code](hypercore/nn/linear/lorentz_linear.py) [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Tangent-space-based linear layer [source code](hypercore/nn/linear/hnn_layers.py) [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
-- Poincare linear layer [source code](hypercore/nn/linear/poincare_linear.py) [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
+- HyboNet linear layer [source code](hypercore/nn/linear/hybonet_linear.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- Hypformer linear layer [source code](hypercore/nn/linear/lorentz_linear.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Tangent-space-based linear layer [source code](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
+- Poincare linear layer [source code](hypercore/nn/linear/poincare_linear.py) from Shimizu et al., [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
+</details>
+
+<details>
+<summary>Hyperbolic Activation Layers(click to expand)</summary>
+
+- Fully hyperbolic (Lorentz) activation layer [source code](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- Tangent-space-based activation layer [source code](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
+</details>
+
+<details>
+<summary>Hyperbolic Classification Layers(click to expand)</summary>
+
+- Fully hyperbolic Lorentzian MLR layer [source code](hypercore/nn/conv/lorentz_MLR.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
+- Poincare MLR layer [source code](hypercore/nn/conv/poincare_MLR.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+</details>
+
+<details>
+<summary>Hyperbolic Convolutional & Residual Layers(click to expand)</summary>
+
+- Fully hyperbolic Lorentzian convolution layer 
 </details>

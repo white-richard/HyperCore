@@ -7,7 +7,7 @@ import math
 
 class HNNLayer(nn.Module):
     """
-    Hyperbolic Neural Network Layer.
+    Tanget-space-based hyperbolic Neural Network Layer.
     Args:
         manifold: Manifold instance.
         in_features (int): Input dimensionality.
@@ -33,7 +33,7 @@ class HNNLayer(nn.Module):
     
 class HypLinear(nn.Module):
     """
-    Hyperbolic Linear Layer.
+    Tanget-space-based hyperbolic Linear Layer.
 
     Applies a Möbius matrix-vector multiplication followed by optional bias addition
     in hyperbolic space.
@@ -84,7 +84,7 @@ class HypLinear(nn.Module):
 
 class HypAct(Module):
     """
-    Hyperbolic Activation Layer.
+    Tanget-space-based hyperbolic Activation Layer.
 
     Applies a standard activation function in the tangent space at the origin,
     then reprojects back to the hyperbolic manifold.
@@ -113,3 +113,18 @@ class HypAct(Module):
         return 'c_in={}, c_out={}'.format(
             self.manifold_in.c, self.manifold_out.c
         )
+    
+class HypResidual(Module):
+    """
+    Tangent-space-based hyperbolic Activation Layer
+
+    Args:
+        manifold: Input manifold
+    """
+
+    def __init__(self, manifold):
+        super(HypAct, self).__init__()
+        self.manifold = manifold
+
+    def forward(self, x, y):
+        return self.manifold.mobius_add(x, y)
