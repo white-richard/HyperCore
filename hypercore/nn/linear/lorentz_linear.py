@@ -18,13 +18,12 @@ class LorentzLinear(nn.Module):
         bias (bool, optional): If True, adds a learnable bias term. Default is True.
         manifold_out (Lorentz, optional): Output Lorentz manifold for projection.
         num_heads (int, optional): Number of output heads (e.g., for multi-head attention). Default is 1.
-        return_space (bool): If true, returns only the space-like dimension of the results to save computation
 
     Based on:
         - Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space (https://arxiv.org/abs/2407.01290)
     """
 
-    def __init__(self, manifold_in: Lorentz, in_features, out_features, bias=True, manifold_out=None, num_heads=1, return_space=False):
+    def __init__(self, manifold_in: Lorentz, in_features, out_features, bias=True, manifold_out=None, num_heads=1):
         super().__init__()
         self.in_features = in_features  # time dimension already accounted for
         self.out_features = out_features
@@ -35,13 +34,23 @@ class LorentzLinear(nn.Module):
         self.linear = nn.Linear(self.in_features, self.out_features, bias=bias)
         self.reset_parameters()
         self.num_heads = num_heads
-        self.return_space = return_space
 
     def reset_parameters(self):
         init.xavier_uniform_(self.linear.weight, gain=math.sqrt(2))
         init.constant_(self.linear.bias, 0)
 
-    def forward(self, x, x_manifold='hyp'):
+    def forward(self, x, x_manifold='hyp', return_space=False):
+        """
+        Forward pass for LorentzLinear.
+
+        Args:
+            x (torch.Tensor): Input Lorentz tensor.
+            x_manifold (str): One of 'hyp' or 'euc', indicating which manifold the input is on
+            return_space (bool): If true, returns only the space-like dimension of the results to save computation
+
+        Returns:
+            torch.Tensor: RMS-normalized tensor in Lorentz space.
+        """
         if x_manifold != 'hyp':
             x = torch.cat([torch.ones_like(x)[..., 0:1], x], dim=-1)
             x = self.manifold.expmap0(x)
@@ -49,7 +58,7 @@ class LorentzLinear(nn.Module):
         if self.num_heads > 1:
             dim_per_head = self.out_features // self.num_heads
             x_space = x_space.reshape(x_space.size(0), x_space.size(1), self.num_heads, dim_per_head)
-        if self.return_space:
+        if return_space:
             x = x_space
         else:
             x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()

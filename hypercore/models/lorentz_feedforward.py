@@ -4,7 +4,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from hyplib.manifolds import Lorentz
+from hypercore.manifolds import Lorentz
 
 class LorentzFeedForward(nn.Module):
     """
@@ -31,9 +31,9 @@ class LorentzFeedForward(nn.Module):
         # self.w2 = RowParallelLinear(inter_dim, dim)
         # self.w3 = ColumnParallelLinear(dim, inter_dim)
         self.c = manifold.c
-        self.w1 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1, return_space=True)
+        self.w1 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1)
         self.w2 = hnn.LorentzLinear(self.manifold, inter_dim, dim - 1)
-        self.w3 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1, return_space=True)      
+        self.w3 = hnn.LorentzLinear(self.manifold, dim, inter_dim - 1)      
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -45,9 +45,8 @@ class LorentzFeedForward(nn.Module):
         Returns:
             torch.Tensor: Output tensor after MLP computation.
         """
-
-        x1_time = F.silu((self.w1(x)))
-        x3_time = self.w3(x)
+        x1_time = F.silu(self.w1(x, return_space=True))
+        x3_time = self.w3(x, return_space=True)
         x_space = x1_time * x3_time
         x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
         x = torch.cat([x_time, x_space], dim=-1)
