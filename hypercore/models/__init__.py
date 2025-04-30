@@ -9,6 +9,4 @@ from .tokenizer import Tokenizer
 from .graph_retriever import GRetriever
 from .LCLIP import LCLIP
 from .Transformer_encoder import LTransformerEncoder
-from .lorentz_deepseekV3 import LorentzDeepSeekV3
-from .lorentz_MoE import LorentzMoE
 from .lorentz_feedforward import LorentzFeedForward

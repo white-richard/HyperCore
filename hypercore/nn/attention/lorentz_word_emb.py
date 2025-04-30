@@ -6,15 +6,12 @@ from hypercore.manifolds import Lorentz
 from geoopt import ManifoldParameter
 import warnings
 import math
-
 class LorentzEmbeddings(nn.Module):
     """Words embeddings for encoder/decoder, includes positional embedding
     Additionally includes ability to add sparse input features
-    
-    Based on 
-        - Linguistic Input Features Improve Neural Machine Translation
-        - Adapted from "Fully hyperbolic neural networks" 
-
+    based on "Linguistic Input Features Improve Neural Machine Translation"
+    :cite:`sennrich2016linguistic`.
+    Adapted from "Fully hyperbolic neural networks" (chen2021fully)
     Args:
         manifold_in (Lorentz): manifold of the inputs
         num_embeddings (int): size of the vocab
@@ -94,9 +91,9 @@ class LorentzEmbeddings(nn.Module):
         if self.posit_embed:
             self.poisitional_encoding = ManifoldParameter(self.manifold_in.random_normal((max_len, 1, self.embedding_size), std=math.sqrt(0.02)), manifold=self.manifold_in, requires_grad=True)
             self.point = LorentzLinear(self.manifold_in, self.embedding_size, self.embedding_size - 1, manifold_out=self.manifold_out)
-        self.add_pos = LResNet(self.manifold_in, use_scale=True, scale=1.0)
+        self.add_pos = LResNet(self.manifold_in, use_scale=True)
         self.embedding = ManifoldParameter(self.manifold_in.random_normal(
-            (vocab_sizes[0], emb_dims[0]), std=20), manifold=self.manifold_in, requires_grad=True)
+            (vocab_sizes[0], emb_dims[0])), manifold=self.manifold_in)
         self.eps = {torch.float32: 1e-7, torch.float64: 1e-15}
 
     def _validate_args(self, feat_merge, feat_vocab_sizes, feat_vec_exponent,
@@ -146,5 +143,6 @@ class LorentzEmbeddings(nn.Module):
             emb = self.point(emb)
         else:
             emb = source
+            emb = emb * (self.manifold_out.c / self.manifold_in.c).sqrt()
             emb = emb.permute(1, 0, 2)
         return emb

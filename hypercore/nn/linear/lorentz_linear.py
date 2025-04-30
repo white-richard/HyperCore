@@ -61,7 +61,7 @@ class LorentzLinear(nn.Module):
         if return_space:
             x = x_space
         else:
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()

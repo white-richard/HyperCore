@@ -8,6 +8,7 @@ Based on:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 class LorentzLayerNorm(nn.Module):
     """
@@ -52,7 +53,7 @@ class LorentzLayerNorm(nn.Module):
         if return_space:
             x = x_space
         else:
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
@@ -98,7 +99,7 @@ class LorentzNormalization(nn.Module):
         if return_space:
             x = x_space
         else:
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
@@ -141,7 +142,7 @@ class LorentzActivation(nn.Module):
         if return_space:
             x = x_space
         else:    
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
                 x = x * (self.manifold_out.c / self.c).sqrt()
@@ -186,7 +187,7 @@ class LorentzDropout(nn.Module):
             if return_space:
                 x = x_space
             else:
-                x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+                x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
                 x = torch.cat([x_time, x_space], dim=-1)
             if self.manifold_out is not None:
                 x = x * (self.manifold_out.c / self.c).sqrt()
@@ -204,7 +205,7 @@ class LResNet(nn.Module):
         scale (float or None): Fixed or use learnable scaling when None.
         manifold_out: Optional target manifold for output projection.
     """
-    def __init__(self, manifold_in, weight=None, batch_size=None, use_scale=False, scale=None, manifold_out=None):
+    def __init__(self, manifold_in, weight=None, batch_size=None, use_scale=False, scale=None, learn_scale=False, manifold_out=None):
         super(LResNet, self).__init__()
         self.manifold = manifold_in
         if weight is not None:
@@ -219,8 +220,12 @@ class LResNet(nn.Module):
         self.scale = None
         if use_scale:
             if scale:
-                self.scale = scale
-                self.learned_scale = False
+                if learn_scale:
+                    self.scale = nn.Parameter(torch.tensor(math.log(scale)))
+                    self.learned_scale = True
+                else:
+                    self.scale = scale
+                    self.learned_scale = False
             else:
                 self.scale = nn.Parameter(torch.tensor(4.0))
                 self.learned_scale = True
@@ -238,14 +243,14 @@ class LResNet(nn.Module):
             torch.Tensor: Resulting Lorentzian residual.
         """
         ave = x + y * self.w_y
-        denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(1e-6).sqrt()
+        denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(1e-8).sqrt()
         x = self.c.sqrt() * ave / denom
         if self.scale:
             if self.learned_scale:
                 x_space = self.scale.exp() * x[..., 1:]
             else:
                 x_space = self.scale * x[..., 1:]
-            x_time = ((x_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((x_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         
         if self.manifold_out is not None:
@@ -263,7 +268,7 @@ class LorentzRMSNorm(nn.Module):
         eps (float): Small value for numerical stability.
         manifold_out: Optional output manifold.
     """
-    def __init__(self, manifold_in, dim: int, eps: float = 1e-6, manifold_out=None):
+    def __init__(self, manifold_in, dim: int, eps: float = 1e-8, manifold_out=None):
         super().__init__()
         self.dim = dim
         self.eps = eps
@@ -292,7 +297,7 @@ class LorentzRMSNorm(nn.Module):
         if return_space:
             x = normed_space
         else:
-            x_time = ((normed_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-6).sqrt()
+            x_time = ((normed_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
             x = torch.cat([x_time, normed_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
