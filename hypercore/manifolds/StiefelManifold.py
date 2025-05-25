@@ -2,7 +2,7 @@ import torch as th
 import torch.nn as nn
 import numpy as np
 from torch.autograd import Function, Variable
-from hypercore.utils import *
+from ..utils import *
 from .base import Manifold
 
 _eps = 1e-10

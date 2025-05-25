@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 from scipy.special import beta
 
-from hypercore.manifolds import PoincareBall
-from hypercore.nn.conv import PoincareMLR
+from ...manifolds import PoincareBall
+from ...nn.conv import PoincareMLR
 
 
 class PoincareConvolution2d(nn.Module):

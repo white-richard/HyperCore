@@ -1,7 +1,7 @@
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
-from hypercore.utils import *
+from ...utils import *
 # from utils.pre_utils import nn_init
 
 class CentroidDistance(nn.Module):

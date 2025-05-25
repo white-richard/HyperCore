@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 import math
-from hypercore.manifolds import Lorentz
+from ...manifolds import Lorentz
 class LorentzLinear(nn.Module):
     """
     Fully hyperbolic Lorentz Linear Layer with variable curvature

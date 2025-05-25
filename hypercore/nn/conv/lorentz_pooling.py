@@ -8,7 +8,7 @@ Based on:
 import torch
 import torch.nn as nn
 
-from hypercore.manifolds import Lorentz
+from ...manifolds import Lorentz
 
 class LorentzGlobalAvgPool2d(torch.nn.Module):
     """ Implementation of a Lorentz Global Average Pooling based on Lorentz centroid defintion. 

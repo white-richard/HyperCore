@@ -1,10 +1,10 @@
 """Graph decoders."""
-import hypercore.manifolds as manifolds
+from .. import manifolds as manifolds
 import torch.nn as nn
 import torch.nn.functional as F
 
-from hypercore.nn import GraphAttentionLayer
-from hypercore.nn import GraphConvolution, Linear, GATConv, HGATConv
+from ..nn import GraphAttentionLayer
+from ..nn import GraphConvolution, Linear, GATConv, HGATConv
 
 from geoopt import ManifoldParameter
 import torch

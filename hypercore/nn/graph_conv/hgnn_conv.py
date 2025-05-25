@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from geoopt.manifolds import PoincareBall
-from hypercore.nn.graph_conv.gcn_conv import GCNConv
+from ...nn.graph_conv.gcn_conv import GCNConv
 
 class HGNNConv(nn.Module):
     """

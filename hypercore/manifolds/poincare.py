@@ -2,7 +2,7 @@
 
 import torch
 
-from hypercore.utils import artanh, tanh
+from ..utils import artanh, tanh
 from typing import Optional
 from geoopt import Stereographic
 

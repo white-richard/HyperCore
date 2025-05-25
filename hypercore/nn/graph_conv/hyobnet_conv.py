@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import math
 from torch.nn.modules.module import Module
-from hypercore.nn.linear import HyboNetLinear
+from ...nn.linear import HyboNetLinear
 class HybonetConv(nn.Module):
     """
     Fully hyperbolic Graph Convolution Layer (HyboNetConv).

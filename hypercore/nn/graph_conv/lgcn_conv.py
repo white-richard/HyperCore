@@ -4,9 +4,9 @@ import math
 import torch.nn.init as init
 from torch.nn.modules.module import Module
 import torch.nn.functional as F
-from hypercore.nn.graph_conv.att_layers import SpecialSpmm
-from hypercore.nn.attention.sparse_dist import LorentzSparseSqDisAtt
-from hypercore.nn.linear import HypAct
+from ...nn.graph_conv.att_layers import SpecialSpmm
+from ...nn.attention.sparse_dist import LorentzSparseSqDisAtt
+from ...nn.linear import HypAct
 
 class LGCNConv(nn.Module):
     """

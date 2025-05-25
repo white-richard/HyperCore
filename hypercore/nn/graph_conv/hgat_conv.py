@@ -9,8 +9,8 @@ from torch.nn.parameter import Parameter
 from torch_scatter import scatter
 from torch_geometric.utils import remove_self_loops, softmax
 from geoopt.manifolds import PoincareBall
-from hypercore.nn.linear.hnn_layers import HypLinear
-from hypercore.nn.linear.lorentz_linear import LorentzLinear
+from ...nn.linear.hnn_layers import HypLinear
+from ...nn.linear.lorentz_linear import LorentzLinear
 
 class HGATConv(Module):
     """

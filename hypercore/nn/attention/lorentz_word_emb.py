@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from hypercore.nn.linear import LorentzLinear
-from hypercore.nn.conv import LResNet
-from hypercore.manifolds import Lorentz
+from ...nn.linear import LorentzLinear
+from ...nn.conv import LResNet
+from ...manifolds import Lorentz
 from geoopt import ManifoldParameter
 import warnings
 import math

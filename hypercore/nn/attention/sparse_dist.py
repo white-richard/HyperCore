@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from hypercore.nn.linear.lorentz_linear import LorentzLinear
+from ...nn.linear.lorentz_linear import LorentzLinear
 
 class LorentzSparseSqDisAtt(nn.Module):
     def __init__(self, manifold, in_features, dropout):

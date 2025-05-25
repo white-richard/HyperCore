@@ -5,12 +5,12 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from hypercore.models.graph_decoders import model2decoder, MDDecoder
-from hypercore.utils.eval_utils import acc_f1, MarginLoss
-from hypercore.manifolds import Lorentz
+from ..models.graph_decoders import model2decoder, MDDecoder
+from ..utils.eval_utils import acc_f1, MarginLoss
+from ..manifolds import Lorentz
 import networkx as nx
 import scipy.sparse as sp
-import hypercore.utils.distortions as dis
+from ..utils import distortions as dis
 from geoopt.manifolds import PoincareBall
 
 class BaseModel(nn.Module):

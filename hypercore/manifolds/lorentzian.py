@@ -2,7 +2,7 @@
 # 2019.12.20
 
 import torch
-from hypercore.utils import arcosh, artanh, tanh
+from ..utils import arcosh, artanh, tanh
 import numpy as np
 from . import lmath as math
 import geoopt

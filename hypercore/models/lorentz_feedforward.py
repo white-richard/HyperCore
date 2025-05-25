@@ -1,10 +1,10 @@
-import hyplib.nn as hnn
+from .. import nn as hnn
 import math
 import torch
 from torch import nn
 import torch.nn.functional as F
 
-from hyplib.manifolds import Lorentz
+from ..manifolds import Lorentz
 
 class LorentzFeedForward(nn.Module):
     """

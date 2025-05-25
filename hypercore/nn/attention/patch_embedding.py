@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from hypercore.nn.conv import LorentzConv2d
+from ...nn.conv import LorentzConv2d
 
 class LorentzPatchEmbedding(nn.Module):
     """

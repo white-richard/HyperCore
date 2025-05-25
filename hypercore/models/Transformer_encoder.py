@@ -2,7 +2,7 @@ from __future__ import annotations
 from tqdm import tqdm
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import MultiStepLR
-from hypercore.optimizers import Optimizer, LR_Scheduler
+from ..optimizers import Optimizer, LR_Scheduler
 import numpy as np
 import random
 import time
@@ -10,9 +10,9 @@ import math
 import logging
 import torch
 import torch.nn as nn
-import hypercore.nn as hnn
+from .. import nn as hnn
 import os
-from hypercore.manifolds import Lorentz
+from ..manifolds import Lorentz
 import re
 from collections import OrderedDict
 from torch.utils.checkpoint import checkpoint

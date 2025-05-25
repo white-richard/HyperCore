@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from torch.nn.modules.module import Module
-from hypercore.nn.graph_conv.att_layers import DenseAtt
-from hypercore.nn.linear.hnn_layers import HypAct, HypLinear
+from ...nn.graph_conv.att_layers import DenseAtt
+from ...nn.linear.hnn_layers import HypAct, HypLinear
 
 class HGCNConv(nn.Module):
     """

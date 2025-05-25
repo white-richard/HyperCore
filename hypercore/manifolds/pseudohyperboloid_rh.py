@@ -3,7 +3,7 @@
 import torch
 
 from .base import Manifold
-from hypercore.utils import arcosh, cosh, sinh 
+from ..utils import arcosh, cosh, sinh 
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms

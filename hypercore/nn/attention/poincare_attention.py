@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import math
-from hypercore.nn import PoincareLinear
-from hypercore.manifolds import PoincareBall
+from ...nn import PoincareLinear
+from ...manifolds import PoincareBall
 import torch.nn.functional as F
 
 class PoincareAttentionLayer(nn.Module):

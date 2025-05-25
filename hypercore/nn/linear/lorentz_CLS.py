@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from geoopt import ManifoldParameter
 import math
-from hypercore.manifolds import Lorentz
+from ...manifolds import Lorentz
 
 class LorentzCLS(nn.Module):
     """

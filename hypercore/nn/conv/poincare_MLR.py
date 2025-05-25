@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from hypercore.manifolds import PoincareBall
+from ...manifolds import PoincareBall
 
 class PoincareMLR(nn.Module):
     def __init__(self, manifold, c):

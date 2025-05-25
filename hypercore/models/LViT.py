@@ -5,9 +5,9 @@ from tqdm import tqdm
 from torchvision import datasets, transforms
 import torch
 import torch.nn as nn
-import hypercore.nn as hnn
+from .. import nn as hnn
 import torch.nn.functional as F
-from hypercore.manifolds import Lorentz
+from ..manifolds import Lorentz
 import numpy as np
 import math
 from geoopt import ManifoldParameter

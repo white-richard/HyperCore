@@ -11,9 +11,9 @@ import torch.nn.functional as F
 
 import math
 
-from hypercore.manifolds import Lorentz
-from hypercore.nn.linear import LorentzLinear
-from hypercore.nn.conv.conv_util_layers import *
+from ...manifolds import Lorentz
+from ...nn.linear import LorentzLinear
+from ...nn.conv.conv_util_layers import *
 
 class LorentzConv1d(nn.Module):
     """

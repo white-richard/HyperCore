@@ -11,7 +11,7 @@ import torch.nn.functional as F
 
 import math
 
-from hypercore.manifolds import Lorentz
+from ...manifolds import Lorentz
 
 class LorentzMLR(nn.Module):
     """ Multinomial logistic regression (MLR) in the Lorentz model

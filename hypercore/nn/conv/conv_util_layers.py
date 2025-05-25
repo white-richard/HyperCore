@@ -232,17 +232,21 @@ class LResNet(nn.Module):
         self.c = manifold_in.c
         self.manifold_out = manifold_out
 
-    def forward(self, x, y):
+    def forward(self, x, y, weight=None):
         """
         Forward pass for LResNet residual block.
 
         Args:
             x, y (torch.Tensor): Lorentzian vectors.
-
+            weight: If not None, overwrites the weight
         Returns:
             torch.Tensor: Resulting Lorentzian residual.
         """
-        ave = x + y * self.w_y
+        if weight is not None:
+            w_y = weight
+        else:
+            w_y = self.w_y
+        ave = x + y * w_y
         denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(1e-8).sqrt()
         x = self.c.sqrt() * ave / denom
         if self.scale:

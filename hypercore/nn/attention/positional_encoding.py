@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from hypercore.nn.linear import LorentzLinear
-from hypercore.nn.conv import LResNet
+from ...nn.linear import LorentzLinear
+from ...nn.conv import LResNet
 
 class LorentzRelativePosEncoding(nn.Module):
     """

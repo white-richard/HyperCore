@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from hypercore.manifolds import PoincareBall
-# from hypercore.nn.conv import PoincareMLR
+from ...manifolds import PoincareBall
+# from ...nn.conv import PoincareMLR
 
 class PoincareLinear(nn.Module):
     """

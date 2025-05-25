@@ -1,5 +1,5 @@
 import torch
-from hypercore.utils.data_utils import load_data
+from ..utils.data_utils import load_data
 import argparse
 
 parser = argparse.ArgumentParser()

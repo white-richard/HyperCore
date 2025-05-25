@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from hypercore.nn.graph_conv.hgat_conv import HGATConv
-from hypercore.nn.graph_conv.gat_conv import GATConv
+from ...nn.graph_conv.hgat_conv import HGATConv
+from ...nn.graph_conv.gat_conv import GATConv
 from geoopt.manifolds import PoincareBall
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F

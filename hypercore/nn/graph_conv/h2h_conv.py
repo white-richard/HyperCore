@@ -5,8 +5,8 @@ import torch.nn.functional as F
 import torch.nn.init as init
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
-from hypercore.nn.linear.hnn_layers import HypLinear
-from hypercore.utils import *
+from ...nn.linear.hnn_layers import HypLinear
+from ...utils import *
 
 '''
 H2HGCN, module code in progress

@@ -14,10 +14,10 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from hypercore.nn.linear import LorentzLinear, LorentzCLS
-from hypercore.nn.conv import LorentzLayerNorm, LorentzActivation, LorentzDropout, LorentzNormalization
-from hypercore.manifolds import Lorentz
-from hypercore.nn import LResNet
+from ...nn.linear import LorentzLinear, LorentzCLS
+from ...nn.conv import LorentzLayerNorm, LorentzActivation, LorentzDropout, LorentzNormalization
+from ...manifolds import Lorentz
+from ...nn import LResNet
 
 class LorentzMultiheadAttention(nn.Module):
     """

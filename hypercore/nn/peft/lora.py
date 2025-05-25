@@ -19,7 +19,7 @@ import warnings
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import List, Optional, Union
-from hypercore.nn.conv import LorentzDropout
+from ...nn.conv import LorentzDropout
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

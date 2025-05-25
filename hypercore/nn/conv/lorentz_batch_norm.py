@@ -15,7 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from geoopt import ManifoldParameter
-from hypercore.manifolds import Lorentz
+from ...manifolds import Lorentz
 
 class LorentzBatchNorm(nn.Module):
     """

@@ -4,8 +4,8 @@ import math
 import torch.nn.init as init
 from torch.nn.modules.module import Module
 import torch.nn.functional as F
-from hypercore.nn.linear.pseudo_linear import PseudoHypLinear
-from hypercore.nn.graph_conv.att_layers import DenseAtt
+from ...nn.linear.pseudo_linear import PseudoHypLinear
+from ...nn.graph_conv.att_layers import DenseAtt
 class QGCNConv(nn.Module):
     """
     QGCN, TODO Adapt to current version of libary

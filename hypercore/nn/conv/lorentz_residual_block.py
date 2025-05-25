@@ -2,8 +2,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-from hypercore.manifolds import Lorentz
-from hypercore.nn.conv import *
+from ...manifolds import Lorentz
+from ...nn.conv import *
 
 
 def get_Conv2d(manifold_in, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True, normalize=False, manifold_out=None):

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from hypercore.manifolds import PoincareBall
+from ...manifolds import PoincareBall
 
 class PoincareBatchNorm(nn.Module):
     """
