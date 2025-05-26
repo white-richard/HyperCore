@@ -21,7 +21,7 @@ class LorentzLayerNorm(nn.Module):
         in_features (int): Dimensionality of spatial input features.
         manifold_out: Optional Lorentz manifold for projecting output.
     """
-    def __init__(self, manifold_in, in_features, manifold_out=None):
+    def __init__(self, manifold_in, in_features, manifold_out=None, eps=1e-4):
         super(LorentzLayerNorm, self).__init__()
         self.in_features = in_features
         self.manifold = manifold_in
@@ -29,6 +29,7 @@ class LorentzLayerNorm(nn.Module):
         self.manifold_out = manifold_out
         self.layer = nn.LayerNorm(self.in_features)
         self.reset_parameters()
+        self.eps = eps
 
     def reset_parameters(self):
         self.layer.reset_parameters()
@@ -53,7 +54,7 @@ class LorentzLayerNorm(nn.Module):
         if return_space:
             x = x_space
         else:
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
@@ -69,11 +70,12 @@ class LorentzNormalization(nn.Module):
         manifold_out: Optional target manifold for output projection.
         
     """
-    def __init__(self, manifold_in, manifold_out=None, return_space=False):
+    def __init__(self, manifold_in, manifold_out=None, return_space=False, eps=1e-4):
         super(LorentzNormalization, self).__init__()
         self.manifold = manifold_in
         self.manifold_out = manifold_out
         self.c = manifold_in.c
+        self.eps = eps
 
     def forward(self, x, norm_factor=None, space_only=False, return_space=False):
         """
@@ -99,7 +101,7 @@ class LorentzNormalization(nn.Module):
         if return_space:
             x = x_space
         else:
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
@@ -115,12 +117,13 @@ class LorentzActivation(nn.Module):
         activation (Callable): Activation function (e.g., nn.ReLU()).
         manifold_out: Optional output Lorentz manifold.
     """
-    def __init__(self, manifold_in, activation, manifold_out=None):
+    def __init__(self, manifold_in, activation, manifold_out=None, eps=1e-4):
         super(LorentzActivation, self).__init__()
         self.manifold = manifold_in
         self.manifold_out = manifold_out
         self.activation = activation
         self.c = manifold_in.c
+        self.eps = eps
 
     def forward(self, x, space_only=False, return_space=False):
         """
@@ -142,7 +145,7 @@ class LorentzActivation(nn.Module):
         if return_space:
             x = x_space
         else:    
-            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+            x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         if self.manifold_out is not None:
                 x = x * (self.manifold_out.c / self.c).sqrt()
@@ -158,14 +161,15 @@ class LorentzDropout(nn.Module):
         dropout (float): Dropout probability.
         manifold_out: Optional output manifold for projection.
     """
-    def __init__(self, manifold_in, dropout, manifold_out=None):
+    def __init__(self, manifold_in, dropout, manifold_out=None, eps=1e-4):
         super(LorentzDropout, self).__init__()
         self.manifold = manifold_in
         self.manifold_out = manifold_out
         self.dropout = nn.Dropout(dropout)
         self.c = manifold_in.c
+        self.eps=eps
 
-    def forward(self, x, training=False, space_only=False, return_space=False):
+    def forward(self, x, space_only=False, return_space=False):
         """
         Forward pass of LorentzDropout.
 
@@ -178,7 +182,7 @@ class LorentzDropout(nn.Module):
         Returns:
             torch.Tensor: Tensor after dropout with corrected time.
         """
-        if training:
+        if self.training:
             if space_only:
                 x_space = x
             else:
@@ -187,7 +191,7 @@ class LorentzDropout(nn.Module):
             if return_space:
                 x = x_space
             else:
-                x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+                x_time = ((x_space**2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
                 x = torch.cat([x_time, x_space], dim=-1)
             if self.manifold_out is not None:
                 x = x * (self.manifold_out.c / self.c).sqrt()
@@ -205,7 +209,7 @@ class LResNet(nn.Module):
         scale (float or None): Fixed or use learnable scaling when None.
         manifold_out: Optional target manifold for output projection.
     """
-    def __init__(self, manifold_in, weight=None, batch_size=None, use_scale=False, scale=None, learn_scale=False, manifold_out=None):
+    def __init__(self, manifold_in, weight=None, batch_size=None, use_scale=False, scale=None, learn_scale=False, manifold_out=None, eps=1e-4):
         super(LResNet, self).__init__()
         self.manifold = manifold_in
         if weight is not None:
@@ -231,6 +235,7 @@ class LResNet(nn.Module):
                 self.learned_scale = True
         self.c = manifold_in.c
         self.manifold_out = manifold_out
+        self.eps = eps
 
     def forward(self, x, y, weight=None):
         """
@@ -247,14 +252,14 @@ class LResNet(nn.Module):
         else:
             w_y = self.w_y
         ave = x + y * w_y
-        denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(1e-8).sqrt()
+        denom = (-self.manifold.l_inner(ave, ave, dim=-1, keep_dim=True)).abs().clamp_min(self.eps).sqrt()
         x = self.c.sqrt() * ave / denom
         if self.scale:
             if self.learned_scale:
                 x_space = self.scale.exp() * x[..., 1:]
             else:
                 x_space = self.scale * x[..., 1:]
-            x_time = ((x_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+            x_time = ((x_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
             x = torch.cat([x_time, x_space], dim=-1)
         
         if self.manifold_out is not None:
@@ -272,7 +277,7 @@ class LorentzRMSNorm(nn.Module):
         eps (float): Small value for numerical stability.
         manifold_out: Optional output manifold.
     """
-    def __init__(self, manifold_in, dim: int, eps: float = 1e-8, manifold_out=None):
+    def __init__(self, manifold_in, dim: int, eps: float = 1e-4, manifold_out=None):
         super().__init__()
         self.dim = dim
         self.eps = eps
@@ -301,7 +306,7 @@ class LorentzRMSNorm(nn.Module):
         if return_space:
             x = normed_space
         else:
-            x_time = ((normed_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(1e-8).sqrt()
+            x_time = ((normed_space ** 2).sum(dim=-1, keepdims=True) + self.c).clamp_min(self.eps).sqrt()
             x = torch.cat([x_time, normed_space], dim=-1)
         if self.manifold_out is not None:
             x = x * (self.manifold_out.c / self.c).sqrt()
