@@ -271,6 +271,9 @@ class LorentzRMSNorm(nn.Module):
     """
     Root Mean Square Layer Normalization in Lorentz geometry.
 
+    Based on: 
+        - HELM: Hyperbolic Large Language Models via Mixture-of-Curvature Experts (https://arxiv.org/abs/2505.24722)
+
     Args:
         manifold_in: Input manifold.
         dim (int): Dimensionality of spatial vector.
