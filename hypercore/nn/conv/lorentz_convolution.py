@@ -229,10 +229,9 @@ class LorentzConv2d(nn.Module):
         
         patches_pre_kernel = torch.cat((patches_time_rescaled, patches_space), dim=-1)
         out = self.linearized_kernel(patches_pre_kernel)
+        out = out.view(bsz, h_out, w_out, self.out_channels + 1)
         if self.normalization:
             out = self.normalization(out)
-        out = out.view(bsz, h_out, w_out, self.out_channels + 1)
-
         return out
 
 class LorentzConvTranspose2d(nn.Module):
@@ -299,8 +298,7 @@ class LorentzConvTranspose2d(nn.Module):
         self.pad_weight = nn.Parameter(F.pad(torch.ones((self.in_channels,1,1,1)),(1,1,1,1)), requires_grad=False)
 
         self.conv = LorentzConv2d(
-            manifold=self.manifold,
-            c=self.c,
+            manifold_in=self.manifold,
             in_channels=in_channels, 
             out_channels=out_channels, 
             kernel_size=kernel_size, 
@@ -310,7 +308,6 @@ class LorentzConvTranspose2d(nn.Module):
             normalize=normalize,
             manifold_out=self.manifold_out
         )
-
     def forward(self, x):
         """
         Forward pass for LorentzConvTranspose2d.
@@ -330,11 +327,11 @@ class LorentzConvTranspose2d(nn.Module):
             x = F.conv_transpose2d(x, self.pad_weight,stride=self.stride,padding=1, groups=self.in_channels)
             x = x.permute(0,2,3,1)
             x[..., 0].clamp_(min=self.c.sqrt())
-
         x = self.conv(x)
-
         if self.output_padding[0] > 0 or self.output_padding[1] > 0:
+            x = x.permute(0,3,1,2)
             x = F.pad(x, pad=(0, self.output_padding[1], 0, self.output_padding[0])) # Pad one side of each dimension (bottom+right) (see PyTorch documentation)
+            x = x.permute(0, 2, 3, 1)  
             if self.manifold_out: # Fix origin padding
                 x[..., 0].clamp_(min=self.manifold_out.c.sqrt())
             else:
