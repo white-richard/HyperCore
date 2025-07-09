@@ -70,7 +70,7 @@ class LorentzResidualBlock(nn.Module):
 
         self.c = manifold_in.c
 
-        self.activation = get_Activation(self.manifold, self.c, act)
+        self.activation = get_Activation(self.manifold, act)
 
         self.conv = nn.Sequential(
             get_Conv2d(
