@@ -48,7 +48,7 @@ class Lorentz(LorentzOri):
         return -2 * (self.c + xy_inner)
     
     def proj(self, p, dim=-1):
-        return self.projx(p, dim)
+        return self.projx(p, dim=dim) # dim is keyword argument only FIXED
 
     def proj_tan_zero(self, u,):
         zeros = torch.zeros_like(u)
