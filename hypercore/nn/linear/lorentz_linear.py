@@ -37,7 +37,8 @@ class LorentzLinear(nn.Module):
 
     def reset_parameters(self):
         init.xavier_uniform_(self.linear.weight, gain=math.sqrt(2))
-        init.constant_(self.linear.bias, 0)
+        if self.bias:
+            init.constant_(self.linear.bias, 0)
 
     def forward(self, x, x_manifold='hyp', return_space=False):
         """
