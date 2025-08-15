@@ -29,7 +29,7 @@ def get_Activation(manifold_in, act=F.relu, manifold_out=None):
 class LorentzInputBlock(nn.Module):
     """ Input Block of Pre-buidlt ResNet model """
 
-    def __init__(self, manifold_in: Lorentz, img_dim, in_channels, bias=True, manifold_out=None):
+    def __init__(self, manifold_in: Lorentz, img_dim, in_channels, bias=True, manifold_out=None, kernel_size=3, padding=1, stride=1):
         super(LorentzInputBlock, self).__init__()
 
         self.manifold = manifold_in
@@ -41,8 +41,9 @@ class LorentzInputBlock(nn.Module):
                 self.manifold,
                 img_dim,
                 in_channels,
-                kernel_size=3,
-                padding=1,
+                kernel_size=kernel_size,
+                padding=padding,
+                stride=stride,
                 bias=bias.as_integer_ratio,
                 manifold_out=manifold_out
             ),
