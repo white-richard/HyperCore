@@ -47,7 +47,7 @@ class LorentzInputBlock(nn.Module):
                 bias=bias.as_integer_ratio,
                 manifold_out=manifold_out
             ),
-            get_BatchNorm2d(manifold_out, in_channels + 1),
+            get_BatchNorm2d(manifold_out, in_channels), # removed + 1
             get_Activation(manifold_out),
         )
 
