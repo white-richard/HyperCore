@@ -10,3 +10,4 @@ from .graph_retriever import GRetriever
 from .LCLIP import LCLIP
 from .Transformer_encoder import LTransformerEncoder
 from .lorentz_feedforward import LorentzFeedForward
+from .lorentz_knn import LorentzKNeighborsClassifier
