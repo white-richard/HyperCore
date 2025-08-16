@@ -1,3 +1,5 @@
+local/
+
 *.pyc
 *.DS_Store
 # Byte-compiled / optimized / DLL files
@@ -203,4 +205,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+clean_compiled_requirements.txt
+
+clean_requirements.txt
+
 .DS_Store
