@@ -116,6 +116,7 @@ class LorentzBatchNorm1d(LorentzBatchNorm):
     """
     def __init__(self, manifold_in: Lorentz, num_features: int, manifold_out=None, space_method=False, momentum=0.1):
         super(LorentzBatchNorm1d, self).__init__(manifold_in, num_features, manifold_out)
+        self.space_method = space_method
         if space_method:
             self.norm = nn.BatchNorm1d(num_features=num_features, momentum=momentum)
     def forward(self, x, momentum=0.1):
