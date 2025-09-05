@@ -6,19 +6,16 @@ build-backend = "setuptools.build_meta"
 name = "hypercore"
 version = "0.1.0"
 description = "Package installation for Hypercore"
-authors = [
-    { name = "Neil He et al", email = "neilhe6345@gmail.com" }
-]
-readme = "README.md"  # change if your readme filename is different
+authors = [{ name = "Neil He et al", email = "neilhe6345@gmail.com" }]
+readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "MIT" }  # replace with your actual license
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
+license = { text = "MIT" }
+classifiers = ["Programming Language :: Python :: 3"]
 dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/Graph-and-Geometric-Learning/HyperCore"
 
-[tool.setuptools]
-packages = { find = {where = ["hypercore"]} }
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hypercore*"]
