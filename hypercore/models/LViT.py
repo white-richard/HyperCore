@@ -126,7 +126,6 @@ class LViT(nn.Module):
         encoder_output = self.encoder(embedding_output, output_attentions=output_attentions)
         # Calculate the logits and return
         emb = self.manifold_out.lorentzian_centroid(encoder_output)
-        print(f"embed shape: {emb.shape}");exit(0)
         if return_embeddings:
             return emb
         logits = self.classifier(emb)
