@@ -19,7 +19,7 @@ class LorentzMLR(nn.Module):
     def __init__(
             self, 
             manifold: Lorentz, 
-            num_features: int, 
+            num_features: int, # D+1 ambient
             num_classes: int
         ):
         super(LorentzMLR, self).__init__()
