@@ -1,15 +1,7 @@
-'''
-Example of building a hyperbolic vision transformer
-'''
-from tqdm import tqdm
-from torchvision import datasets, transforms
 import torch
 import torch.nn as nn
 from .. import nn as hnn
 import torch.nn.functional as F
-from ..manifolds import Lorentz
-import numpy as np
-import math
 from geoopt import ManifoldParameter
 
 
@@ -17,7 +9,6 @@ class HyperbolicMLP(nn.Module):
     """
     A hyperbolic multi-layer perceptron module.
     """
-
     def __init__(self, manifold, in_channel, hidden_channel, dropout=0):
         super().__init__()
         self.manifold = manifold
@@ -37,7 +28,6 @@ class LorentzTransformerBlock(nn.Module):
     """
     A single lorentz transformer block.
     """
-
     def __init__(self, manifold, in_channel, hidden_channel, dropout=0, num_heads=1, output_attentions=False):
         super().__init__()
         self.num_heads = num_heads
@@ -66,7 +56,6 @@ class LViTEncoder(nn.Module):
     """
     The lorentzian vision transformer encoder module.
     """
-
     def __init__(self, manifold_in, num_layers, in_channel, hidden_channel, num_heads=1, dropout=0, output_attentions=False, manifold_out=None):
         super().__init__()
         # Create a list of transformer blocks
@@ -88,28 +77,24 @@ class LViTEncoder(nn.Module):
 
 
 class LViT(nn.Module):
-    """
-    The ViT model for classification.
-    """
-
     def __init__(self, 
                  manifold_in, 
                  manifold_hidden, 
                  manifold_out,
-                 image_size=224, 
-                 patch_size=16,
-                 num_layers=12, 
+                 image_size, 
+                 patch_size,
+                 num_layers, 
+                 hidden_channel, 
+                 num_classes, 
+                 num_heads, 
+                 mlp_hidden_expansion, 
                  in_channel=3, 
-                 hidden_channel=65, 
-                 out_channel=1000, 
-                 mlp_hidden_size=65*4*12 + 1, 
-                 num_heads=12, 
-                 dropout=0.1, 
+                 dropout=0.0, 
                  output_attentions=False):
         super().__init__()
         self.in_channel = in_channel + 1
         self.hidden_channel = hidden_channel
-        self.out_channel = out_channel
+        self.num_classes = num_classes
         self.manifold_in = manifold_in
         self.manifold_hidden = manifold_hidden
         self.manifold_out = manifold_out
@@ -124,14 +109,12 @@ class LViT(nn.Module):
         self.pe = ManifoldParameter(self.manifold_in.random_normal((1, self.num_patches, num_heads * self.hidden_channel)), manifold=self.manifold_in, requires_grad=True)
         self.add_pos = hnn.LResNet(manifold_in, use_scale=True, scale=1.0)
         # Create the transformer encoder module
-        self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, mlp_hidden_size, num_heads, dropout, output_attentions)
-        if self.out_channel > 0:
-            self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.out_channel)
+        self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, self.mlp_hidden_size, num_heads, dropout, output_attentions)
+        
+        self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
 
-    def forward(self, x, output_attentions=False):
+    def forward(self, x, output_attentions=False, return_embeddings=False, return_both=False):
         # Calculate the embedding output
-        assert(not self.pe.isnan().any())
-        assert(not self.pe.isinf().any())
         x = x.permute(0, 2, 3, 1) 
         x_hyp = self.manifold_in.projx(F.pad(x, pad=(1, 0)))
         embedding_output = self.patch_embedding(x_hyp)
@@ -139,10 +122,60 @@ class LViT(nn.Module):
         # Calculate the encoder's output
         encoder_output = self.encoder(embedding_output, output_attentions=output_attentions)
         # Calculate the logits and return
-        if self.out_channel > 0:
-            out = self.classifier(self.manifold_out.lorentzian_centroid(encoder_output))
-        else:
-            out = self.manifold_out.lorentzian_centroid(encoder_output)
-        assert(not out.isnan().any())
-        assert(not out.isinf().any())
-        return out
+        emb = self.manifold_out.lorentzian_centroid(encoder_output)
+        print(f"embed shape: {emb.shape}");exit(0)
+        if return_embeddings:
+            return emb
+        logits = self.classifier(emb)
+        if return_both:
+            return logits, emb
+        return logits
+
+
+def LViT_tiny(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=3,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
+
+def LViT_small(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=6,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
+
+def LViT_base(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=12,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
