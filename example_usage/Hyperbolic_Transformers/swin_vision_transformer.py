@@ -9,7 +9,8 @@ from geoopt import ManifoldParameter
 
 from hypercore.manifolds import Lorentz
 from hypercore.optimizers import RiemannianAdam
-from hypercore.models.Swin_LViT import LSwin_tiny
+from hypercore.models.Swin_LViT import LSwin_base
+from hypercore.models.LViT import LViT_base
 
 
 def set_seed(seed=42):
@@ -34,7 +35,7 @@ def topk_correct(output, target, ks=(1,)):
     return res
 
 
-def train_one_epoch(model, loader, device, optimizer, scaler, criterion):
+def train_one_epoch(model, loader, device, optimizer, criterion):
     model.train()
     running_loss, correct1, correct5, total = 0.0, 0.0, 0.0, 0
     for x, y in tqdm(loader, leave=False):
@@ -42,17 +43,11 @@ def train_one_epoch(model, loader, device, optimizer, scaler, criterion):
         y = y.to(device, non_blocking=True)
 
         optimizer.zero_grad()
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
-            logits = model(x)
-            loss = criterion(logits, y)
+        logits = model(x)
+        loss = criterion(logits, y)
 
-        if scaler is not None:
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            loss.backward()
-            optimizer.step()
+        loss.backward()
+        optimizer.step()
 
         running_loss += loss.item() * x.size(0)
         c1, c5 = topk_correct(logits, y, ks=(1, 5))
@@ -90,67 +85,111 @@ def evaluate(model, loader, device, criterion):
     )
 
 
-def main():
+def main(model_name:str):
     set_seed(42)
     torch.backends.cudnn.benchmark = True
+    # CIFAR 10
+    """
+    LSwin Tiny Best 
+    Val@1: 79.41
+    Testing (final checkpoint on disk)…
+    Results: Loss=0.7792, Acc@1=79.41, Acc@5=98.35
+    """
+    """
+    LViT Tiny Best
+    5=97.41
+    Best Val@1: 70.19
+    Testing (final checkpoint on disk)…
+    Results: Loss=0.9133, Acc@1=70.19, Acc@5=97.27
+    """
+    # CIFAR 100
+    """LViT
+    5=66.05
+    Best Val@1: 37.47
+    Testing (final checkpoint on disk)…
+    Results: Loss=2.6469, Acc@1=37.47, Acc@5=66.21
+    """
+    """Swin LViT
+    Best Val@1: 44.54
+    Testing (final checkpoint on disk)…
+    Results: Loss=2.6972, Acc@1=44.54, Acc@5=70.84
+    """
+
+    # BASE MODELS
+    
 
     train_transform = transforms.Compose([
         transforms.RandomCrop(32, padding=4),
         transforms.RandomHorizontalFlip(),
+        transforms.RandAugment(magnitude=14),
         transforms.ToTensor(),
         transforms.Normalize((0.5074, 0.4867, 0.4411), (0.267, 0.256, 0.276)),
-    ])
+	])
     test_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5074, 0.4867, 0.4411), (0.267, 0.256, 0.276)),
     ])
 
     data_root = "hypercore/data"
-    train_set = datasets.CIFAR10(data_root, train=True, download=True, transform=train_transform)
-    test_set  = datasets.CIFAR10(data_root, train=False, download=True, transform=test_transform)
+    train_set = datasets.CIFAR100(data_root, train=True, download=True, transform=train_transform)
+    test_set  = datasets.CIFAR100(data_root, train=False, download=True, transform=test_transform)
 
-    train_loader = DataLoader(train_set, batch_size=64, shuffle=True,  num_workers=8, pin_memory=True, drop_last=True)
+    train_loader = DataLoader(train_set, batch_size=512, shuffle=True,  num_workers=8, pin_memory=True, drop_last=True)
     test_loader  = DataLoader(test_set,  batch_size=128, shuffle=False, num_workers=8, pin_memory=True)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     manifold = Lorentz(1.0)
 
-    # CIFAR-10: image_size=32, patch_size=4 → 8×8 tokens; window_size=4 is a good default
-    model = LSwin_tiny(
-        manifold_in=manifold,
-        manifold_hidden=manifold,
-        manifold_out=manifold,
+    if model_name=='LViT':
+        # CIFAR-10: image_size=32, patch_size=4 → 8×8 tokens; window_size=4 is a good default
+        model = LSwin_base(
+             manifold_in=manifold,
+             manifold_hidden=manifold,
+             manifold_out=manifold,
+             image_size=32,
+             patch_size=4,
+             num_classes=100,
+             window_size=4, # 4×4 windows inside 8×8 grid
+             embed_dim=33,
+             dropout=0.0,
+        ).to(device)
+    elif model_name == 'LSwin':
+        model = LViT_base(
+            manifold_in=manifold,
+            manifold_hidden=manifold,
+            manifold_out=manifold,
         image_size=32,
-        patch_size=4,
-        num_classes=10,
-        window_size=4, # 4×4 windows inside 8×8 grid
-        embed_dim=33,
-        dropout=0.0,
-    ).to(device)
+        num_classes=100
+        ).to(device)
+    elif model_name == 'ESwin':
+        from euclidean_swin_ViT import swin_base
+        model = swin_base(
+            image_size=32,
+            num_classes=100
+        ).to(device)
+
     for p in model.parameters():
         if isinstance(p, ManifoldParameter):
             p.requires_grad_(False)
 
     criterion = nn.CrossEntropyLoss()
 
-    epochs = 300
+    epochs = 400
 
-    optimizer = RiemannianAdam(model.parameters(),lr = 1e-4, weight_decay=1e-4, stabilize=1)
+    optimizer = RiemannianAdam(model.parameters(),lr = 1e-4, stabilize=1)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=epochs, eta_min=optimizer.param_groups[0]['lr'] * 1e-3
     )
     print(optimizer)
     print(model)
 
-    scaler = torch.amp.GradScaler() if torch.cuda.is_available() else None
-
     best_acc1 = 0.0
     save_path = "Lorentz_SwinViT_cifar10.pt"
 
     for epoch in range(epochs):
         train_loss, train_acc1, train_acc5 = train_one_epoch(
-            model, train_loader, device, optimizer, scaler, criterion
+            model, train_loader, device, optimizer, criterion
         )
 
         scheduler.step()
@@ -174,4 +213,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    model_names = ['LViT', 'LSwin','ESwin']
+    for model_name in model_names:
+        print(f"Training model: {model_name}...\n")
+        main(model_name)
+        print("\n\n")
