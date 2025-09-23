@@ -98,13 +98,13 @@ class LViT(nn.Module):
         self.manifold_in = manifold_in
         self.manifold_hidden = manifold_hidden
         self.manifold_out = manifold_out
+        self.manifold = manifold_out
         self.image_size = image_size
         self.patch_size = patch_size
         self.num_layers = num_layers
         self.num_patches = (image_size // patch_size) ** 2
         self.num_heads = num_heads
         self.width = self.num_heads * self.hidden_channel
-        print(f"width: {self.width}")
         self.mlp_hidden_size = self.width * mlp_hidden_expansion
         torch._assert(image_size % patch_size == 0, "Input shape indivisible by patch size!")
         # Create the embedding module
