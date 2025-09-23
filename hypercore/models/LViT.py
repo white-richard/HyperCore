@@ -114,7 +114,10 @@ class LViT(nn.Module):
         # Create the transformer encoder module
         self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, self.mlp_hidden_size, num_heads, dropout, output_attentions)
         
-        self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
+        if num_classes > 0:
+            self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
+        else:
+            self.classifier = nn.Identity()
 
     def forward(self, x, output_attentions=False, return_embeddings=False, return_both=False):
         # Calculate the embedding output
@@ -126,6 +129,9 @@ class LViT(nn.Module):
         encoder_output = self.encoder(embedding_output, output_attentions=output_attentions)
         # Calculate the logits and return
         emb = self.manifold_out.lorentzian_centroid(encoder_output)
+
+        if self.num_classes == 0:
+            return emb
         if return_embeddings:
             return emb
         logits = self.classifier(emb)
