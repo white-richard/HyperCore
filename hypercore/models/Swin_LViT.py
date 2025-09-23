@@ -358,6 +358,9 @@ class LSwinViT(nn.Module):
                 x, H, W = layer(x, H, W, output_attentions=False)
 
         emb = self.manifold_out.lorentzian_centroid(x)
+
+        if self.num_classes == 0:
+            return emb
         if return_embeddings:
             return emb
         logits = self.classifier(emb)
