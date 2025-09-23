@@ -339,7 +339,10 @@ class LSwinViT(nn.Module):
         self.final_width = num_heads[-1] * embed_dim
         self.width = self.final_width
         # classifier on Lorentzian centroid pooled token set
-        self.classifier = hnn.LorentzMLR(self.manifold_out, self.final_width, num_classes)
+        if num_classes > 0:
+            self.classifier = hnn.LorentzMLR(self.manifold_out, self.final_width, num_classes)
+        else:
+            self.classifier = nn.Identity()
 
     def forward(self, x, return_embeddings=False, return_both=False, output_attentions=False):
         B = x.size(0)
