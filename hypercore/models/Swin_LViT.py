@@ -281,12 +281,14 @@ class LSwinViT(nn.Module):
         window_size=7,
         mlp_ratio=4.0,
         dropout=0.0,
-        num_classes=1000,
+        num_classes=0,
     ):
         super().__init__()
         self.manifold_in = manifold_in
         self.manifold_hidden = manifold_hidden
         self.manifold_out = manifold_out
+        self.manifold = manifold_out
+        self.num_classes = num_classes
         self.image_size = image_size
         self.patch_size = patch_size
         self.window_size = window_size
@@ -335,6 +337,7 @@ class LSwinViT(nn.Module):
                 # next stage heads already set by num_heads[i+1]
 
         self.final_width = num_heads[-1] * embed_dim
+        self.width = self.final_width
         # classifier on Lorentzian centroid pooled token set
         self.classifier = hnn.LorentzMLR(self.manifold_out, self.final_width, num_classes)
 
