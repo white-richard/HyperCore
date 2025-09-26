@@ -23,12 +23,12 @@ For now, the dependencies for HyperCore can be installed via
 
 ```bash
 python -m pip install --upgrade pip setuptools wheel packaging && \
-pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124 && \
-pip install torch_geometric && \
-pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.6.0+cu124.html && \
-pip install -r requirements.txt && \
-pip install scipy==1.13.1 numpy==1.26.4 && \
-pip install -e .
+python -m pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124 && \
+python -m pip install torch_geometric && \
+python -m pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.6.0+cu124.html && \
+python -m pip install -r requirements.txt && \
+python -m pip install scipy==1.13.1 numpy==1.26.4 && \
+python -m pip install -e .
 ```
 
 Installation via pip directly is ***coming soon...***
