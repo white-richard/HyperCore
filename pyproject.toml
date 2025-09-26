@@ -16,6 +16,9 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/Graph-and-Geometric-Learning/HyperCore"
 
+[tool.setuptools]
+package-dir = { "" = "." }
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["hypercore*"]
