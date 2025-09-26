@@ -278,3 +278,24 @@ class Lorentz(LorentzOri):
         asin_input = 2 * min_radius / (torch.norm(x[..., 1:], dim=-1) * self.c**0.5 + eps)
         _half_aperture = torch.asin(torch.clamp(asin_input, min=-1 + eps, max=1 - eps))
         return _half_aperture
+    
+    def pairwise_distance(self, Xq: torch.Tensor, Xref: torch.Tensor, keepdim=False, dim=-1) -> torch.Tensor:
+        """
+        Compute pairwise Lorentz distances between query and reference sets.
+
+        Args:
+            Xq   : (Nq, D)  Query embeddings on the Lorentz manifold
+            Xref : (Nf, D)  Reference embeddings on the Lorentz manifold
+            keepdim : if True, keep the last dimension
+            dim : dimension along which to compute the distance
+
+        Returns:
+            dists: (Nq, Nf) matrix where dists[i, j] = dist(Xq[i], Xref[j])
+        """
+        # Unsqueeze to broadcast: (Nq, 1, D) vs (1, Nf, D)
+        Xq_exp   = Xq.unsqueeze(1)     # (Nq, 1, D)
+        Xref_exp = Xref.unsqueeze(0)   # (1, Nf, D)
+
+        dists = self.dist(Xq_exp, Xref_exp, keepdim=keepdim, dim=dim)  # (Nq, Nf)
+
+        return dists
