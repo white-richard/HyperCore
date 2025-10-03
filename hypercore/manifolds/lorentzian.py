@@ -279,23 +279,24 @@ class Lorentz(LorentzOri):
         _half_aperture = torch.asin(torch.clamp(asin_input, min=-1 + eps, max=1 - eps))
         return _half_aperture
     
-    def pairwise_distance(self, Xq: torch.Tensor, Xref: torch.Tensor, keepdim=False, dim=-1) -> torch.Tensor:
+    def pairwise_distance(self, x1: torch.Tensor, x2: torch.Tensor=None, keepdim=False, dim=-1) -> torch.Tensor:
         """
-        Compute pairwise Lorentz distances between query and reference sets.
-
+        Compute pairwise Lorentzian distances between two sets of points on the hyperboloid.
         Args:
-            Xq   : (Nq, D)  Query embeddings on the Lorentz manifold
-            Xref : (Nf, D)  Reference embeddings on the Lorentz manifold
-            keepdim : if True, keep the last dimension
-            dim : dimension along which to compute the distance
-
+            x1: Tensor of shape `(Nq, D)` giving `Nq` points on the hyperboloid.
+            x2: Optional tensor of shape `(Nf, D)` giving `Nf` points on the hyperboloid.
+                If `None`, compute pairwise distances within `x1`.
+            keepdim: Whether to keep the last dimension (of size 1) in the output.
+            dim: The dimension corresponding to the coordinates of the points.
         Returns:
-            dists: (Nq, Nf) matrix where dists[i, j] = dist(Xq[i], Xref[j])
+            Tensor of shape `(Nq, Nf)` (or `(Nq, Nf, 1)` if `keepdim=True`) giving
+            pairwise Lorentzian distances.
         """
-        # Unsqueeze to broadcast: (Nq, 1, D) vs (1, Nf, D)
-        Xq_exp   = Xq.unsqueeze(1)     # (Nq, 1, D)
-        Xref_exp = Xref.unsqueeze(0)   # (1, Nf, D)
+        if x2 is None:
+            x2 = x1
+        x1 = x1.unsqueeze(1)  # (Nq, 1, D)
+        x2 = x2.unsqueeze(0)  # (1, Nf, D)
 
-        dists = self.dist(Xq_exp, Xref_exp, keepdim=keepdim, dim=dim)  # (Nq, Nf)
+        dists = self.dist(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
 
         return dists
