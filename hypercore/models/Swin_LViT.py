@@ -243,17 +243,17 @@ class LorentzSwinLayer(nn.Module):
                 )
             )
         self.downsample = downsample
-        # if downsample:
-        #     self.merger = LorentzPatchMerging(manifold, num_heads * dim, 2 * num_heads * dim)
         if downsample:
-            # Preserve a single time-like coordinate: double spatial (C-1) and add back 1 time
-            # in_dim = num_heads * dim = C_in (includes time)
-            # Desired out_dim = 2*C_in - 1  ( (C_in-1)*2 + 1 )
-            self.merger = LorentzPatchMerging(
-                manifold,
-                num_heads * dim,
-                2 * num_heads * dim - 1
-            )
+            self.merger = LorentzPatchMerging(manifold, num_heads * dim, 2 * num_heads * dim)
+        # if downsample:
+        #     # Preserve a single time-like coordinate: double spatial (C-1) and add back 1 time
+        #     # in_dim = num_heads * dim = C_in (includes time)
+        #     # Desired out_dim = 2*C_in - 1  ( (C_in-1)*2 + 1 )
+        #     self.merger = LorentzPatchMerging(
+        #         manifold,
+        #         num_heads * dim,
+        #         2 * num_heads * dim - 1
+        #     )
 
     def forward(self, x, H, W, output_attentions=False):
         attns = []
