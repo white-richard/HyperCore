@@ -14,10 +14,16 @@ class ManifoldDistance(BaseDistance):
         self.scale = scale
 
     def compute_mat(self, query_emb, ref_emb):
-        mat = self.manifold.pairwise_distance(query_emb, ref_emb, keepdim=False, dim=-1) # [N,M]
-        if self.scale != 0.0:
-            mat = self.scale * mat
+        if ref_emb is None:
+            ref_emb = query_emb
+        mat = self.pairwise_distance(query_emb, ref_emb) # [N,M]
         return mat.to(torch.float32)
+    
+    def pairwise_distance(self, query_emb, ref_emb):
+        dist = self.manifold.pairwise_distance(query_emb, ref_emb, keepdim=False, dim=-1)  # [N]
+        if self.scale and self.scale != 0.0:
+            dist = self.scale * dist
+        return dist.to(torch.float32)
 
 
 class LorentzTripletLoss(torch.nn.Module):
@@ -33,13 +39,13 @@ class LorentzTripletLoss(torch.nn.Module):
         feature_dim: dimension of the embeddings (required if use_xbm is True)
         memory_size: size of the memory bank (only used if use_xbm is True)
     """
-    def __init__(self, manifold, margin=1.0, scale=0.0, type_of_triplets="semihard", use_xbm=False, feature_dim=512, memory_size=2048):
+    def __init__(self, manifold, margin=1.0, scale=0.0, type_of_triplets="semihard", use_xbm=False, feature_dim=512, memory_size=2048, hyperbolic=True):
         super().__init__()
         self.manifold = manifold
         self.margin = float(margin)
         self.scale = float(scale)
         self.dist = ManifoldDistance(manifold, scale=0.0)
-        self.loss = losses.TripletMarginLoss(margin=margin, distance=self.dist, swap=True)
+        self.loss = losses.TripletMarginLoss(margin=margin, distance=self.dist)
         use_miner = type_of_triplets is not None
         self.miner = None
         if use_miner:
@@ -66,4 +72,37 @@ class LorentzTripletLoss(torch.nn.Module):
                 loss = self.loss(embeddings, labels, hard_pairs)
             else:
                 loss = self.loss(embeddings, labels)
+        return loss
+    
+class LorentzArcFaceLoss(torch.nn.Module):
+    """
+    ArcFace loss in the Lorentz model of hyperbolic space, using pytorch-metric-learning.
+    Args:
+        manifold: instance of a Lorentz manifold class from hypercore.manifolds
+        scale: scaling factor for distances (default 0.0, i.e. no scaling)
+        margin: angular margin for ArcFace
+    """
+    def __init__(self, manifold, num_classes, embedding_size, scale=0.0, margin=0.5):
+        super().__init__()
+        self.manifold = manifold
+        self.scale = float(scale)
+        self.margin = float(margin)
+        self.dist = ManifoldDistance(manifold)
+
+        self.loss = losses.ArcFaceLoss(
+            num_classes=num_classes,
+            embedding_size=embedding_size,
+            margin=57.3 * margin,
+            scale=scale,
+        )
+
+    def forward(self, embeddings, labels):
+        """
+        Args:
+            embeddings: in the Lorentz model, shape (B, D+1)
+            labels: shape (B,)
+        Returns:
+            loss value
+        """
+        loss = self.loss(embeddings, labels)
         return loss
