@@ -14,6 +14,8 @@ class ManifoldDistance(BaseDistance):
         self.scale = scale
 
     def compute_mat(self, query_emb, ref_emb):
+        query_emb = query_emb.to(torch.float64)
+        ref_emb = ref_emb.to(torch.float64)
         if ref_emb is None:
             ref_emb = query_emb
         mat = self.pairwise_distance(query_emb, ref_emb) # [N,M]
