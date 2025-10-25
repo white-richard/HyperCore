@@ -90,7 +90,9 @@ class LViT(nn.Module):
                  mlp_hidden_expansion, 
                  in_channel=3, 
                  dropout=0.0, 
-                 output_attentions=False):
+                 output_attentions=False,
+                 embed_dim=None,
+                 ):
         super().__init__()
         self.in_channel = in_channel + 1
         self.hidden_channel = hidden_channel
@@ -106,6 +108,7 @@ class LViT(nn.Module):
         self.num_heads = num_heads
         self.width = self.num_heads * self.hidden_channel
         self.mlp_hidden_size = self.width * mlp_hidden_expansion
+        self.embed_dim = embed_dim if embed_dim is not None else self.width
         torch._assert(image_size % patch_size == 0, "Input shape indivisible by patch size!")
         # Create the embedding module
         self.patch_embedding = hnn.LorentzPatchEmbedding(manifold_in, image_size, patch_size, self.in_channel, self.num_heads * self.hidden_channel - 1)
@@ -114,6 +117,10 @@ class LViT(nn.Module):
         # Create the transformer encoder module
         self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, self.mlp_hidden_size, num_heads, dropout, output_attentions)
         
+        # Final projection layer if needed
+        if self.embed_dim and self.embed_dim != self.width:
+            self.final_proj = hnn.LorentzLinear(self.manifold_out, self.width, self.embed_dim)
+
         if num_classes > 0:
             self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
         else:
@@ -129,6 +136,9 @@ class LViT(nn.Module):
         encoder_output = self.encoder(embedding_output, output_attentions=output_attentions)
         # Calculate the logits and return
         emb = self.manifold_out.lorentzian_centroid(encoder_output)
+
+        if getattr(self, "embed_dim", self.width) != self.width:
+            emb = self.final_proj(emb)
 
         if self.num_classes == 0:
             return emb
