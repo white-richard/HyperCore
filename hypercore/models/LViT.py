@@ -139,6 +139,7 @@ class LViT(nn.Module):
 
         if getattr(self, "embed_dim", self.width) != self.width:
             emb = self.final_proj(emb)
+            emb = self.manifold_out.projx(emb)
 
         if self.num_classes == 0:
             return emb
