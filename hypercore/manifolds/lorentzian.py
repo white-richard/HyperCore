@@ -232,7 +232,7 @@ class Lorentz(LorentzOri):
         )
         return (self.c.reciprocal().sqrt()) * res
 
-    def oxy_angle(self, x, y, eps: float = 1e-8):
+    def oxy_angle(self, x, y, eps: float = 1e-6):
         """
         Given two vectors `x` and `y` on the hyperboloid, compute the exterior
         angle at `x` in the hyperbolic triangle `Oxy` where `O` is the origin
@@ -245,22 +245,21 @@ class Lorentz(LorentzOri):
         """
 
         # Calculate time components of inputs (multiplied with `sqrt(curv)`):
-        x_time = x[..., :1]
-        y_time = y[..., :1]
+        x_time = x[..., 0]
+        y_time = y[..., 0]
         x_space = x[..., 1:]
         y_space = y[..., 1:]
-        # Lorentz inner product, computed manually to save space since we only need the diagonal
-        c_xyl = self.c * (torch.sum(x_space[..., 1:] * y_space[..., 1:], dim=-1) - x_time * y_time)
+        c_xyl = self.l_inner(x, y) * (1/self.c)
 
         # Make the numerator and denominator for input to arc-cosh, shape: (B, )
         acos_numer = y_time + c_xyl * x_time
         acos_denom = torch.sqrt(torch.clamp(c_xyl**2 - 1, min=eps))
 
-        acos_input = acos_numer / (torch.norm(x_space[..., 1:], dim=-1) * acos_denom + eps)
+        acos_input = acos_numer / (torch.norm(x_space, dim=-1) * acos_denom + eps)
         _angle = torch.acos(torch.clamp(acos_input, min=-1 + eps, max=1 - eps))
         return _angle
 
-    def half_aperture(self, x, min_radius: float = 0.1, eps: float = 1e-8):
+    def half_aperture(self, x, min_radius: float = 0.1, eps: float = 1e-6):
         """
         Compute the half aperture angle of the entailment cone formed by vectors on
         the hyperboloid. 
@@ -275,6 +274,6 @@ class Lorentz(LorentzOri):
         """
 
         # Ensure numerical stability in arc-sin by clamping input.
-        asin_input = 2 * min_radius / (torch.norm(x[..., 1:], dim=-1) * self.c**0.5 + eps)
+        asin_input = 2 * min_radius / (torch.norm(x[..., 1:], dim=-1) * (1 / self.c)**0.5 + eps)
         _half_aperture = torch.asin(torch.clamp(asin_input, min=-1 + eps, max=1 - eps))
         return _half_aperture

@@ -22,8 +22,8 @@ class HyperbolicMLP(nn.Module):
     def __init__(self, manifold, in_channel, hidden_channel, dropout=0):
         super().__init__()
         self.manifold = manifold
-        self.dense_1 = hnn.LorentzLinear(self.manifold, in_channel, hidden_channel)
-        self.dense_2 = hnn.LorentzLinear(self.manifold, hidden_channel + 1, in_channel - 1)
+        self.dense_1 = hnn.LorentzLinear(self.manifold, in_channel, hidden_channel - 1)
+        self.dense_2 = hnn.LorentzLinear(self.manifold, hidden_channel, in_channel - 1)
         self.activation = hnn.LorentzActivation(manifold, activation=nn.GELU())
         self.dropout = hnn.LorentzDropout(self.manifold, dropout)
 
@@ -41,14 +41,14 @@ class LorentzTransformerBlock(nn.Module):
 
     def __init__(self, manifold, in_channel, hidden_channel, dropout=0, num_heads=1, output_attentions=False):
         super().__init__()
-        self.attention = hnn.LorentzMultiheadAttention(manifold, in_channel, in_channel - 1, num_heads, attention_type='full', trans_heads_concat=True)
-        self.layernorm_1 = hnn.LorentzLayerNorm(manifold, in_channel - 1)
-        self.layernorm_2 = hnn.LorentzLayerNorm(manifold, in_channel - 1)
-        self.mlp = HyperbolicMLP(manifold, in_channel, hidden_channel, dropout=dropout)
+        self.attention = hnn.LorentzMultiheadAttention(manifold, in_channel, in_channel, num_heads, attention_type='full', trans_heads_concat=True)
+        self.layernorm_1 = hnn.LorentzLayerNorm(manifold, num_heads * in_channel - 1)
+        self.layernorm_2 = hnn.LorentzLayerNorm(manifold, num_heads * in_channel - 1)
+        self.mlp = HyperbolicMLP(manifold, num_heads * in_channel, hidden_channel, dropout=dropout)
         self.output_attentions = output_attentions
         self.manifold = manifold
-        self.residual_1 = hnn.LResNet(manifold, use_scale=True, scale=5.0) # for deep models, scale can be quite large e.g. ~30
-        self.residual_2 = hnn.LResNet(manifold, use_scale=True, scale=5.0)
+        self.residual_1 = hnn.LResNet(manifold, use_scale=True, scale=10.0) # for deep models, scale can be quite large e.g. ~30
+        self.residual_2 = hnn.LResNet(manifold, use_scale=True, scale=10.0)
 
     def forward(self, x, output_attentions=False):
         # Self-attention
@@ -75,7 +75,7 @@ class LViTEncoder(nn.Module):
         for _ in range(num_layers):
             block = LorentzTransformerBlock(manifold_in, in_channel, hidden_channel, dropout, num_heads, output_attentions)
             self.blocks.append(block)
-        self.fc = hnn.LorentzLinear(manifold_in, in_channel, in_channel - 1, manifold_out=manifold_out)
+        self.fc = hnn.LorentzLinear(manifold_in, num_heads * in_channel, num_heads * in_channel - 1, manifold_out=manifold_out)
         self.manifold_out = manifold_out
         self.manifold = manifold_in
 
@@ -101,10 +101,10 @@ class LViT(nn.Module):
                  patch_size=4,
                  num_layers=6, 
                  in_channel=3, 
-                 hidden_channel=64, #dimension per head
+                 hidden_channel=65, #dimension per head
                  out_channel=10, 
-                 mlp_hidden_size=64*4, 
-                 num_heads=8, 
+                 mlp_hidden_size=65*4, 
+                 num_heads=4, 
                  dropout=0.1, 
                  output_attentions=False):
         super().__init__()
@@ -119,16 +119,16 @@ class LViT(nn.Module):
         self.num_layers = num_layers
         self.num_patches = (image_size // patch_size) ** 2
         # Create the embedding module
-        self.patch_embedding = hnn.LorentzPatchEmbedding(manifold_in, image_size, patch_size, self.in_channel, self.hidden_channel * num_heads)
-        self.positional_encoding = ManifoldParameter(self.manifold_in.random_normal((1, self.num_patches, self.hidden_channel + 1)), manifold=self.manifold_in, requires_grad=True)
+        self.patch_embedding = hnn.LorentzPatchEmbedding(manifold_in, image_size, patch_size, self.in_channel, self.hidden_channel * num_heads - 1)
+        self.positional_encoding = ManifoldParameter(self.manifold_in.random_normal((1, self.num_patches, num_heads * self.hidden_channel)), manifold=self.manifold_in, requires_grad=True)
         self.dropout = hnn.LorentzDropout(self.manifold_hidden, dropout=dropout)
         self.add_pos = hnn.LResNet(manifold_hidden, use_scale=True, scale=3.0)
         # Create the transformer encoder module
-        self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel + 1, mlp_hidden_size, num_heads, dropout, output_attentions)
+        self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, mlp_hidden_size * num_heads, num_heads, dropout, output_attentions)
         # Create a linear layer to project the encoder's output to the number of classes
-        self.classifier = hnn.LorentzMLR(self.manifold_out, self.hidden_channel + 1, self.out_channel)
+        self.classifier = hnn.LorentzMLR(self.manifold_out, self.hidden_channel * num_heads, self.out_channel)
         self.dropout = hnn.LorentzDropout(self.manifold_hidden, dropout=dropout)
-        self.fc = hnn.LorentzLinear(manifold_in=manifold_in, manifold_out=self.manifold_hidden, in_features=self.hidden_channel + 1, out_features=self.hidden_channel)
+        self.fc = hnn.LorentzLinear(manifold_in=manifold_in, manifold_out=self.manifold_hidden, in_features=self.hidden_channel * num_heads, out_features=self.hidden_channel * num_heads - 1)
 
     def forward(self, x, output_attentions=False):
         # Calculate the embedding output
