@@ -299,3 +299,32 @@ class Lorentz(LorentzOri):
         dists = self.dist(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
 
         return dists
+    
+    def normalize_spatial(self, x, dim=-1):
+        """
+        Normalize the spatial component of a Lorentz embedding to unit Euclidean length,
+        then recompute the time component to satisfy the hyperboloid constraint.
+        
+        This preserves the direction in the spatial subspace while ensuring the point
+        remains on the hyperboloid: -x₀² + x₁² + ... + xₐ² = -c
+        
+        Args:
+            x: Tensor of shape (..., D) giving points on or near the hyperboloid
+            dim: The dimension along which the coordinates lie (default: -1)
+        
+        Returns:
+            Tensor of same shape as x, with spatial component normalized to unit length
+            and time component recomputed to satisfy hyperboloid constraint
+        """
+        v = self.logmap0(x)
+    
+        # Current distance is ||v|| in tangent space (up to scaling by √c)
+        v_norm = torch.sqrt(torch.clamp_min((v ** 2).sum(dim=dim, keepdim=True), self.eps[x.dtype]))
+        
+        # Scale to unit norm in tangent space
+        v_normalized = v / (v_norm + self.eps[x.dtype])
+        
+        # Map back to hyperboloid
+        x_normalized = self.expmap0(v_normalized)
+        
+        return x_normalized
