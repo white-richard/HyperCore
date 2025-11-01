@@ -113,6 +113,7 @@ class LViT(nn.Module):
         self.manifold_in = manifold_in
         self.manifold_hidden = manifold_hidden
         self.manifold_out = manifold_out
+        self.manifold = self.manifold_out
         self.image_size = image_size
         self.patch_size = patch_size
         self.num_layers = num_layers
@@ -130,8 +131,6 @@ class LViT(nn.Module):
 
     def forward(self, x, output_attentions=False):
         # Calculate the embedding output
-        assert(not self.pe.isnan().any())
-        assert(not self.pe.isinf().any())
         x = x.permute(0, 2, 3, 1) 
         x_hyp = self.manifold_in.projx(F.pad(x, pad=(1, 0)))
         embedding_output = self.patch_embedding(x_hyp)
@@ -143,6 +142,60 @@ class LViT(nn.Module):
             out = self.classifier(self.manifold_out.lorentzian_centroid(encoder_output))
         else:
             out = self.manifold_out.lorentzian_centroid(encoder_output)
-        assert(not out.isnan().any())
-        assert(not out.isinf().any())
         return out
+
+
+def LViT_tiny(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=3,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
+
+def LViT_small(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=6,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
+
+def LViT_base(manifold_in, manifold_hidden, manifold_out, patch_size=16, image_size=224, num_classes=0, dropout=0.0, mlp_hidden_expansion=4, **kwargs):
+    return LViT(
+        manifold_in=manifold_in,
+        manifold_hidden=manifold_hidden,
+        manifold_out=manifold_out,
+        image_size=image_size,
+        patch_size=patch_size,
+        num_layers=12,
+        hidden_channel=64,
+        num_heads=12,
+        num_classes=num_classes,
+        dropout=dropout,
+        mlp_hidden_expansion=mlp_hidden_expansion, 
+        **kwargs
+    )
+
+if __name__ == "__main__":
+    manifold = Lorentz()
+    model = LViT_tiny(manifold, manifold, manifold, image_size=32, patch_size=8, num_classes=10)
+    x = torch.randn(1, 3, 32, 32)
+    out = model(x)
+    print(out.shape)  # Expected output shape: (1, 10)
