@@ -4,11 +4,15 @@
 
 We provide the core modules and functionalities that makes this process simple for users of all backgrounds in differential geometry. These include methods and algorithms for hyperbolic neural networks and foundation models, optimization techiniques, and manifold operations. These come together to enable intuitive constructions of hyperbolic foundation models architectures and pipelines, e.g. [hyperbolic Transformer encoder](example_usage/Hyperbolic_Transformers/lorentz_transformer.py), [hyperbolic ViT](example_usage/Hyperbolic_Transformers/vision_transformer.py), [hyperbolic fine-tuning](example_usage/Fine-Tuning/fine_tuning_example.py), [hyperbolic GraphRAG](example_usage/Hyperbolic_GraphRAG/graphRAG_example.py) and much more (see our paper and tutorials below!). 
 
-- [Framework Highlights](#framework-highlights)
-- [Installation](#installation)
-- [Quick Start: Build Hyperbolic Foundation Models](#quick-start-build-hyperbolic-foundation-models)
-- [Framework Overview](#framework-overview)
-- [Implemented Modules and Details](#implemented-modules-and-details)
+- [HyperCore](#hypercore)
+  - [Framework Highlights](#framework-highlights)
+  - [Installation](#installation)
+  - [Installation with local pip](#installation-with-local-pip)
+  - [Quick Start: Build Hyperbolic Foundation Models](#quick-start-build-hyperbolic-foundation-models)
+    - [Creating Your Own Hyperbolic Transformer Encoder Block](#creating-your-own-hyperbolic-transformer-encoder-block)
+    - [Training a Hyperbolic Vision Transformer](#training-a-hyperbolic-vision-transformer)
+  - [Framework Overview](#framework-overview)
+  - [Implemented Modules and Details](#implemented-modules-and-details)
 
 
 ## Framework Highlights
@@ -32,6 +36,18 @@ pip install -e ".[gpu]"
 cd ..
 ```
 Installation via pip directly is ***coming soon...***
+
+## Installation with local pip
+
+```bash
+python -m pip install --upgrade pip setuptools wheel packaging && \
+python -m pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124 && \
+python -m pip install torch_geometric && \
+python -m pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.6.0+cu124.html && \
+python -m pip install -r requirements.txt && \
+python -m pip install scipy==1.13.1 numpy==1.26.4 && \
+python -m pip install -e .
+```
 
 ## Quick Start: Build Hyperbolic Foundation Models
 In this quick start guide, we highlight the ease of creating and training a hyperbolic foundation model model with HyperCore.
