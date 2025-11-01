@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -286,11 +288,12 @@ class LSwinViT(nn.Module):
         in_channel=3,
         depths=(2, 2, 6, 2),
         num_heads=(2, 4, 8, 16),
-        embed_dim=64, # per-head dim in your setup (hidden_channel)
+        head_dim=64, # per-head dim in your setup (hidden_channel)
         window_size=7,
         mlp_ratio=4.0,
         dropout=0.0,
         num_classes=0,
+        embed_dim:Optional[int]=None,
     ):
         super().__init__()
         self.manifold_in = manifold_in
@@ -303,15 +306,19 @@ class LSwinViT(nn.Module):
         self.window_size = window_size
         self.depths = depths
         self.num_heads = num_heads
-        self.embed_dim = embed_dim
+        self.head_dim = head_dim
         self.in_channel = in_channel + 1  # add time-like channel for Lorentz
+
+        self.width = num_heads[-1] * self.head_dim  # Final width
+        self.embed_dim = embed_dim if embed_dim is not None else self.width
+
 
         assert image_size % patch_size == 0, "Image size must be divisible by patch size"
         self.H0 = self.W0 = image_size // patch_size
         self.num_patches = self.H0 * self.W0
 
-        # Patch embedding to (B, H0*W0, C0) where C0 = num_heads[0]*embed_dim
-        self.width0 = num_heads[0] * embed_dim
+        # Patch embedding to (B, H0*W0, C0) where C0 = num_heads[0]*head_dim
+        self.width0 = num_heads[0] * head_dim
         self.patch_embed = hnn.LorentzPatchEmbedding(
             manifold_in, image_size, patch_size, self.in_channel, self.width0 - 1
         )
@@ -326,7 +333,7 @@ class LSwinViT(nn.Module):
         # Stages
         self.layers = nn.ModuleList()
         H, W = self.H0, self.W0
-        dim = embed_dim
+        dim = head_dim
         for i, depth in enumerate(depths):
             heads = num_heads[i]
             downsample = i < len(depths) - 1
@@ -345,8 +352,14 @@ class LSwinViT(nn.Module):
                 dim = dim  # per-head scalar stays; width grows via num_heads progression
                 # next stage heads already set by num_heads[i+1]
 
-        self.final_width = num_heads[-1] * embed_dim
+        self.final_width = num_heads[-1] * head_dim
         self.width = self.final_width
+
+        if self.embed_dim and self.embed_dim != self.width:
+            self.final_proj = hnn.LorentzLinear(self.manifold_out, self.width, self.embed_dim)
+        else:
+            self.final_proj = None
+
         # classifier on Lorentzian centroid pooled token set
         if num_classes > 0:
             self.classifier = hnn.LorentzMLR(self.manifold_out, self.final_width, num_classes)
@@ -371,6 +384,9 @@ class LSwinViT(nn.Module):
 
         emb = self.manifold_out.lorentzian_centroid(x)
 
+        if self.final_proj is not None:
+            emb = self.final_proj(emb)
+
         if self.num_classes == 0:
             return emb
         if return_embeddings:
@@ -388,11 +404,11 @@ class LSwinViT(nn.Module):
 def LSwin_tiny(manifold_in, manifold_hidden, manifold_out,
                image_size=224, patch_size=4, num_classes=0,
                depths=(2,2,6,2), num_heads=(2,4,8,16),
-               embed_dim=32, window_size=7, mlp_ratio=4.0, dropout=0.0):
+               head_dim=32, window_size=7, mlp_ratio=4.0, dropout=0.0):
     return LSwinViT(
         manifold_in, manifold_hidden, manifold_out,
         image_size=image_size, patch_size=patch_size,
-        depths=depths, num_heads=num_heads, embed_dim=embed_dim,
+        depths=depths, num_heads=num_heads, head_dim=head_dim,
         window_size=window_size, mlp_ratio=mlp_ratio,
         dropout=dropout, num_classes=num_classes
     )
@@ -401,11 +417,11 @@ def LSwin_tiny(manifold_in, manifold_hidden, manifold_out,
 def LSwin_small(manifold_in, manifold_hidden, manifold_out,
                 image_size=224, patch_size=4, num_classes=0,
                 depths=(2,2,18,2), num_heads=(3,6,12,24),
-                embed_dim=32, window_size=7, mlp_ratio=4.0, dropout=0.0):
+                head_dim=32, window_size=7, mlp_ratio=4.0, dropout=0.0):
     return LSwinViT(
         manifold_in, manifold_hidden, manifold_out,
         image_size=image_size, patch_size=patch_size,
-        depths=depths, num_heads=num_heads, embed_dim=embed_dim,
+        depths=depths, num_heads=num_heads, head_dim=head_dim,
         window_size=window_size, mlp_ratio=mlp_ratio,
         dropout=dropout, num_classes=num_classes
     )
@@ -414,11 +430,11 @@ def LSwin_small(manifold_in, manifold_hidden, manifold_out,
 def LSwin_base(manifold_in, manifold_hidden, manifold_out,
                image_size=224, patch_size=4, num_classes=0,
                depths=(2,2,18,2), num_heads=(4,8,16,32),
-               embed_dim=48, window_size=7, mlp_ratio=4.0, dropout=0.0):
+               head_dim=48, window_size=7, mlp_ratio=4.0, dropout=0.0):
     return LSwinViT(
         manifold_in, manifold_hidden, manifold_out,
         image_size=image_size, patch_size=patch_size,
-        depths=depths, num_heads=num_heads, embed_dim=embed_dim,
+        depths=depths, num_heads=num_heads, head_dim=head_dim,
         window_size=window_size, mlp_ratio=mlp_ratio,
         dropout=dropout, num_classes=num_classes
     )
