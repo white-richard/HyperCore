@@ -101,15 +101,16 @@ class LViT(nn.Module):
                  num_layers=12, 
                  in_channel=3, 
                  hidden_channel=65, 
-                 out_channel=1000, 
-                 mlp_hidden_size=65*4*12 + 1, 
+                 num_classes=1000, 
+                #  mlp_hidden_size=65*4*12 + 1, 
+                 mlp_hidden_expansion=4,
                  num_heads=12, 
                  dropout=0.1, 
                  output_attentions=False):
         super().__init__()
         self.in_channel = in_channel + 1
         self.hidden_channel = hidden_channel
-        self.out_channel = out_channel
+        self.num_classes = num_classes
         self.manifold_in = manifold_in
         self.manifold_hidden = manifold_hidden
         self.manifold_out = manifold_out
@@ -120,14 +121,15 @@ class LViT(nn.Module):
         self.num_patches = (image_size // patch_size) ** 2
         self.num_heads = num_heads
         self.width = self.num_heads * self.hidden_channel
+        mlp_hidden_size = self.width * mlp_hidden_expansion + 1
         # Create the embedding module
         self.patch_embedding = hnn.LorentzPatchEmbedding(manifold_in, image_size, patch_size, self.in_channel, self.num_heads * self.hidden_channel - 1)
         self.pe = ManifoldParameter(self.manifold_in.random_normal((1, self.num_patches, num_heads * self.hidden_channel)), manifold=self.manifold_in, requires_grad=True)
         self.add_pos = hnn.LResNet(manifold_in, use_scale=True, scale=1.0)
         # Create the transformer encoder module
         self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, mlp_hidden_size, num_heads, dropout, output_attentions)
-        if self.out_channel > 0:
-            self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.out_channel)
+        if self.num_classes > 0:
+            self.classifier = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
 
     def forward(self, x, output_attentions=False):
         # Calculate the embedding output
@@ -138,7 +140,7 @@ class LViT(nn.Module):
         # Calculate the encoder's output
         encoder_output = self.encoder(embedding_output, output_attentions=output_attentions)
         # Calculate the logits and return
-        if self.out_channel > 0:
+        if self.num_classes > 0:
             out = self.classifier(self.manifold_out.lorentzian_centroid(encoder_output))
         else:
             out = self.manifold_out.lorentzian_centroid(encoder_output)
