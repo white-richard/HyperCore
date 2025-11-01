@@ -60,7 +60,7 @@ class LorentzTripletLoss(torch.nn.Module):
             loss value
         """
         if hasattr(self, 'miner'):
-            hard_pairs = self.miner(embeddings, labels)
-            return self.loss(embeddings, labels, hard_pairs)
+            a, p, n = self.miner(embeddings, labels)
+            return self.loss(embeddings, labels, (a, p, n)), len(a)
         else:
             return self.loss(embeddings, labels)
