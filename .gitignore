@@ -1,5 +1,6 @@
 local/
 test.py
+hypercore/data/
 
 *.pyc
 *.DS_Store
