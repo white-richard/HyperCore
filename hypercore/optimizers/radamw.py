@@ -20,6 +20,8 @@ class RiemannianAdamW(OptimMixin, torch.optim.AdamW):
     which proposes a novel curvature-aware optimization schema and a Lorentzian formulation 
     of AdamW using Lorentzian centroids for weight decay.
 
+    This implementation also applies standard AdamW weight decay for Euclidean parameters.
+
     Parameters
     ----------
     params : iterable
