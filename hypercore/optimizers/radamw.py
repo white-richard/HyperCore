@@ -16,7 +16,7 @@ class RiemannianAdamW(OptimMixin, torch.optim.AdamW):
     during curvature learning.
 
     This implementation is based on the derivation presented in:
-    "Robust Hyperbolic Learning with Curvature-Aware Optimization" (Bdeir et al., 2024),
+    "Robust Hyperbolic Learning with Curvature-Aware Optimization" (Bdeir et al., 2025),
     which proposes a novel curvature-aware optimization schema and a Lorentzian formulation 
     of AdamW using Lorentzian centroids for weight decay.
 
@@ -107,8 +107,36 @@ class RiemannianAdamW(OptimMixin, torch.optim.AdamW):
                     # make local variables for easy access
                     exp_avg = state["exp_avg"]
                     exp_avg_sq = state["exp_avg_sq"]
+
                     # actual step
-                    
+
+                    # Decoupled weight decay 
+                    # Implementation according to "Robust Hyperbolic Learning with Curvature-Aware Optimization"
+                    # Authored by Bdeir et al., 2025
+                    # https://openreview.net/pdf?id=lJ5WCJZfQn
+                    if weight_decay != 0:
+                        if isinstance(point, (ManifoldParameter, ManifoldTensor)):
+                            # Lorentzian decoupled weight decay: weighted centroid toward the origin
+                            origin = manifold.origin(*point.shape, dtype=point.dtype, device=point.device)
+
+                            pts = torch.stack([point, origin])  # (2, *shape)
+                            x = pts.view(2, -1).unsqueeze(0)  # (1, 2, D)
+
+                            w = torch.tensor([1 - learning_rate * weight_decay, learning_rate * weight_decay],
+                                            dtype=point.dtype, device=point.device).unsqueeze(0)  # (1, 2)
+
+                            centroid = manifold.lorentzian_centroid(x, w).squeeze(0).view_as(point)
+
+                            # # Transport momentum to the decayed point to keep it in the correct tangent space
+                            # if exp_avg is not None:
+                            #     transported = manifold.transp(point, centroid, exp_avg)
+                            #     exp_avg.copy_(transported)
+
+                            point = centroid
+                        else:
+                            # Euclidean decoupled weight decay (AdamW-style)
+                            point.mul_(1 - learning_rate * weight_decay)
+                        
                     # Coupled l2 weight decay
                     # if isinstance(point, (ManifoldParameter, ManifoldTensor)):
                     #     grad.add_(point, alpha=weight_decay)
@@ -133,45 +161,12 @@ class RiemannianAdamW(OptimMixin, torch.optim.AdamW):
                     # copy the state, we need it for retraction
                     # get the direction for ascend
                     direction = (exp_avg / bias_correction1) / ((denom / bias_correction2).sqrt() + eps)
-                  
+
+                    # Retraction + parallel transport of momentum
                     # transport the exponential averaging to the new point
                     new_point, exp_avg_new = manifold.retr_transp(
                         point, -step_size * direction, exp_avg
                     )
-
-                    if weight_decay != 0:
-                        if isinstance(point, (ManifoldParameter, ManifoldTensor)):
-                             # Lorentzian decoupled weight decay via weighted centroid toward the origin
-                            # Adapted from HCNN+ (Bdeir et al., 2024), Section 3.3 "Hyperbolic Weight Decay", p. 5
-                            # https://arxiv.org/abs/2405.13979
-
-                            # Build origin
-                            origin = manifold.origin(*point.shape, dtype=point.dtype, device=point.device)
-
-                            # Stack the points (2, *shape)
-                            pts = torch.stack([new_point, origin])
-
-                            # Flatten to (K=2, D) then add a batch dim -> (1, 2, D)
-                            x = pts.view(2, -1).unsqueeze(0)
-
-                            # Weights -> (1, 2)
-                            w = torch.tensor(
-                                [1 - step_size * weight_decay, step_size * weight_decay],
-                                dtype=point.dtype, device=point.device
-                            ).unsqueeze(0)
-
-                            # If lorentzian_centroid expects (B, K, K) weights, diagonalize:
-                            # w = torch.diag_embed(w)  # (1, 2, 2)
-
-                            centroid = manifold.lorentzian_centroid(x, w)  # expect (1, D) or (1, 2, D) reduced inside
-                            centroid = centroid.squeeze(0).view_as(point)
-                            new_point = centroid
-                        else:
-                            # L2 decoupled weight decay.
-                            # Adapted from PyTorch AdamW implementation:
-                            # https://github.com/pytorch/pytorch/blob/v2.3.0/torch/optim/adamw.py#L158
-                            # (Loshchilov & Hutter, 2017 - Decoupled Weight Decay Regularization)
-                            point.mul_(1 - learning_rate * weight_decay)
 
                     # use copy only for user facing point
                     # copy_or_set_(point, new_point)
