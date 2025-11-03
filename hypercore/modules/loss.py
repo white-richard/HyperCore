@@ -1,32 +1,8 @@
 import torch
 from pytorch_metric_learning.distances import BaseDistance
-from pytorch_metric_learning import losses, miners
-
-
-class ManifoldDistance(BaseDistance):
-    """
-    Wraps manifold.dist(x, y, keepdim=False, dim=-1) so it can be used
-    with pytorch-metric-learning losses and miners.
-    """
-    def __init__(self, manifold, scale=0.0, **kwargs):
-        super().__init__(normalize_embeddings=False, is_inverted=False, **kwargs)
-        self.manifold = manifold
-        self.scale = scale
-
-    def compute_mat(self, query_emb, ref_emb):
-        query_emb = query_emb.to(torch.float64)
-        ref_emb = ref_emb.to(torch.float64)
-        if ref_emb is None:
-            ref_emb = query_emb
-        mat = self.pairwise_distance(query_emb, ref_emb) # [N,M]
-        return mat.to(torch.float32)
-    
-    def pairwise_distance(self, query_emb, ref_emb):
-        dist = self.manifold.pairwise_distance(query_emb, ref_emb, keepdim=False, dim=-1)  # [N]
-        if self.scale and self.scale != 0.0:
-            dist = self.scale * dist
-        return dist.to(torch.float32)
-
+from pytorch_metric_learning import losses, miners, reducers
+from hypercore.utils.manifold_distance import ManifoldDistance
+from hypercore.manifolds.lorentzian import Lorentz
 
 class LorentzTripletLoss(torch.nn.Module):
     """
@@ -34,21 +10,26 @@ class LorentzTripletLoss(torch.nn.Module):
     Args:
         manifold: instance of a Lorentz manifold class from hypercore.manifolds
         margin: margin for the triplet loss
-        scale: scaling factor for distances (default 0.0, i.e. no scaling)
         type_of_triplets: one of "all", "hard", "semihard", "easy", or None
             (if None, no mining is done)
     """
-    def __init__(self, manifold, margin=1.0, scale=0.0, type_of_triplets="semihard"):
+    def __init__(self, manifold:Lorentz, margin=1.0, type_of_triplets="semihard", normalize_embeddings=True):
         super().__init__()
         self.manifold = manifold
         self.margin = float(margin)
-        self.scale = float(scale)
-        self.dist = ManifoldDistance(manifold, scale=0.0)
-        self.loss = losses.TripletMarginLoss(margin=margin, distance=self.dist)
+        distance = ManifoldDistance(manifold, normalize_embeddings=normalize_embeddings)
+        # MeanReducer more stable norm than AverageNonZeroReducer
+        # when number of triplets varies between batches?
+        reducer = reducers.MeanReducer()
+        self.loss = losses.TripletMarginLoss(
+            margin=margin, 
+            distance=distance, 
+            reducer=reducer
+            )
         self.miner = None
         if type_of_triplets is not None:
             self.miner = miners.TripletMarginMiner(
-                margin=margin, type_of_triplets=type_of_triplets, distance=self.dist
+                margin=margin, type_of_triplets=type_of_triplets, distance=distance
             )
    
     def forward(self, embeddings, labels):
@@ -59,7 +40,7 @@ class LorentzTripletLoss(torch.nn.Module):
         Returns:
             loss value
         """
-        if hasattr(self, 'miner'):
+        if self.miner is not None:
             a, p, n = self.miner(embeddings, labels)
             return self.loss(embeddings, labels, (a, p, n)), len(a)
         else:
