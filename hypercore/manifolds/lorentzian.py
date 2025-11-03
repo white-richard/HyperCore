@@ -33,7 +33,6 @@ class Lorentz(LorentzOri):
     def l_inner(self, x, y, keep_dim=False, dim=-1):
         return math._inner(x, y, keep_dim, dim)
     
-
     def sqdist(self, x, y, norm_control=True):
         return self.lorentzian_distance(x, y)
 
@@ -59,7 +58,6 @@ class Lorentz(LorentzOri):
     def proj_tan0(self, u):
         return self.proj_tan_zero(u)
     
-
     def normalize_input(self, x):
         num_nodes = x.size(0)
         zeros = torch.zeros(num_nodes, 1, dtype=x.dtype, device=x.device)
@@ -299,3 +297,31 @@ class Lorentz(LorentzOri):
         dists = self.dist(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
 
         return dists
+    
+
+    def normalize(self, x: torch.Tensor, dim=-1, project: bool = True) -> torch.Tensor:
+        """
+        Normalize a Lorentzian (Minkowski) vector.
+
+        Scales each input vector `x` so that it has unit Lorentzian norm,
+        i.e. <x, x>_L = ±1 depending on whether the vector is timelike or spacelike.
+        The Lorentzian inner product is defined as
+            <u, v>_L = -u_0 * v_0 + u_1 * v_1 + ... + u_d * v_d.
+        This normalization uses `self.norm`, which computes the Lorentz norm
+        ||x||_L = sqrt(|<x, x>_L|).
+
+        Args:
+            x (torch.Tensor): Input Lorentzian vectors of shape (..., d+1).
+            dim (int, optional): Dimension along which to compute the norm. Default is -1.
+            project (bool, optional): Whether to project the result back to the
+                hyperboloid manifold. Default is True.
+
+        Returns:
+            torch.Tensor: Lorentz-normalized (and optionally projected) vectors
+            lying on the hyperboloid manifold.
+        """
+        norm = self.norm(x, dim=dim, keepdim=True)
+        normalized_x = x / norm.clamp_min(self.eps[x.dtype])
+        if project:
+            return self.projx(normalized_x, dim=dim)
+        return normalized_x
