@@ -114,7 +114,7 @@ class RiemannianAdamW(OptimMixin, torch.optim.AdamW):
                     # Implementation according to "Robust Hyperbolic Learning with Curvature-Aware Optimization"
                     # Authored by Bdeir et al., 2025
                     # https://openreview.net/pdf?id=lJ5WCJZfQn
-                    if weight_decay != 0:
+                    if weight_decay > 0.0:
                         if isinstance(point, (ManifoldParameter, ManifoldTensor)):
                             # Lorentzian decoupled weight decay: weighted centroid toward the origin
                             origin = manifold.origin(*point.shape, dtype=point.dtype, device=point.device)
