@@ -4,4 +4,4 @@ from .rsgd import RiemannianSGD
 from .initialize import Optimizer
 from .initialize import LR_Scheduler
 from .radamw_old import RiemannianAdamWOld
-from .radamw import RiemannianAdam
+from .radamw import RiemannianAdamW
