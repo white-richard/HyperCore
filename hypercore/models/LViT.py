@@ -130,6 +130,8 @@ class LViT(nn.Module):
         self.encoder = LViTEncoder(self.manifold_hidden, self.num_layers, self.hidden_channel, mlp_hidden_size, num_heads, dropout, output_attentions)
         if self.num_classes > 0:
             self.head = hnn.LorentzMLR(self.manifold_out, self.num_heads * self.hidden_channel, self.num_classes)
+        else:
+            self.head = nn.Identity()
 
     def forward(self, x, output_attentions=False):
         # Calculate the embedding output
