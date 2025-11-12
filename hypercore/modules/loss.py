@@ -24,6 +24,7 @@ class LorentzTripletLoss(torch.nn.Module):
         normalize_embeddings=False,
         use_soft_margin=True,
         swap=False,
+        distance:str="geodesic",
     ):
         super().__init__()
         self.manifold = manifold
@@ -37,7 +38,7 @@ class LorentzTripletLoss(torch.nn.Module):
         else:
             raise NotImplemented
 
-        distance = ManifoldDistance(manifold, normalize_embeddings=normalize_embeddings)
+        distance = ManifoldDistance(manifold, normalize_embeddings=normalize_embeddings, distance=distance)
 
         self.loss = losses.TripletMarginLoss(
             margin=margin,

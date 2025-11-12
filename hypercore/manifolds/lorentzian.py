@@ -41,9 +41,9 @@ class Lorentz(LorentzOri):
         sqrt_c = self.c ** 0.5
         return sqrt_c * arcosh((xy_inner / self.c).clamp_min(1 + self.eps[x.dtype]))
 
-    def lorentzian_distance(self, x, y, keep_dim=False, dim=-1):
+    def lorentzian_distance(self, x, y, keepdim=False, dim=-1):
         # the squared Lorentzian distance
-        xy_inner = self.l_inner(x, y, keep_dim=keep_dim, dim=dim)
+        xy_inner = self.l_inner(x, y, keep_dim=keepdim, dim=dim)
         return -2 * (self.c + xy_inner)
     
     def proj(self, p, dim=-1):
