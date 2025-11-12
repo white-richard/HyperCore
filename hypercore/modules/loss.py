@@ -4,6 +4,7 @@ from pytorch_metric_learning import losses, miners, reducers
 from hypercore.utils.manifold_distance import ManifoldDistance
 from hypercore.manifolds.lorentzian import Lorentz
 
+
 class LorentzTripletLoss(torch.nn.Module):
     """
     Triplet loss in the Lorentz model of hyperbolic space.
@@ -13,25 +14,47 @@ class LorentzTripletLoss(torch.nn.Module):
         type_of_triplets: one of "all", "hard", "semihard", "easy", or None
             (if None, no mining is done)
     """
-    def __init__(self, manifold:Lorentz, margin=1.0, type_of_triplets="semihard", normalize_embeddings=True):
+
+    def __init__(
+        self,
+        manifold: Lorentz,
+        margin=0.05,
+        type_of_triplets="batchhard",
+        type_of_reducer="AvgNonZeroReducer",
+        normalize_embeddings=False,
+        use_soft_margin=True,
+        swap=False,
+    ):
         super().__init__()
         self.manifold = manifold
         self.margin = float(margin)
-        distance = ManifoldDistance(manifold, normalize_embeddings=normalize_embeddings)
-        # MeanReducer more stable norm than AverageNonZeroReducer
-        # when number of triplets varies between batches?
-        reducer = reducers.MeanReducer()
-        self.loss = losses.TripletMarginLoss(
-            margin=margin, 
-            distance=distance, 
-            reducer=reducer
-            )
         self.miner = None
+
+        if type_of_reducer == "MeanReducer":
+            reducer = reducers.MeanReducer()
+        elif type_of_reducer == "AvgNonZeroReducer":
+            reducer = reducers.AvgNonZeroReducer()
+        else:
+            raise NotImplemented
+
+        distance = ManifoldDistance(manifold, normalize_embeddings=normalize_embeddings)
+
+        self.loss = losses.TripletMarginLoss(
+            margin=margin,
+            distance=distance,
+            reducer=reducer,
+            smooth_loss=use_soft_margin,
+            swap=swap,
+        )
+
         if type_of_triplets is not None:
-            self.miner = miners.TripletMarginMiner(
-                margin=margin, type_of_triplets=type_of_triplets, distance=distance
-            )
-   
+            if type_of_triplets == "batchhard":
+                self.miner = miners.BatchHardMiner(distance=distance)
+            else:
+                self.miner = miners.TripletMarginMiner(
+                    margin=margin, type_of_triplets=type_of_triplets, distance=distance
+                )
+
     def forward(self, embeddings, labels):
         """
         Args:
