@@ -41,9 +41,9 @@ class Lorentz(LorentzOri):
         sqrt_c = self.c ** 0.5
         return sqrt_c * arcosh((xy_inner / self.c).clamp_min(1 + self.eps[x.dtype]))
 
-    def lorentzian_distance(self, x, y):
+    def lorentzian_distance(self, x, y, keep_dim=False, dim=-1):
         # the squared Lorentzian distance
-        xy_inner = self.l_inner(x, y)
+        xy_inner = self.l_inner(x, y, keep_dim=keep_dim, dim=dim)
         return -2 * (self.c + xy_inner)
     
     def proj(self, p, dim=-1):
@@ -276,25 +276,29 @@ class Lorentz(LorentzOri):
         _half_aperture = torch.asin(torch.clamp(asin_input, min=-1 + eps, max=1 - eps))
         return _half_aperture
     
-    def pairwise_distance(self, x1: torch.Tensor, x2: torch.Tensor=None, keepdim=False, dim=-1) -> torch.Tensor:
+    def pairwise_distance(self, x1: torch.Tensor, x2: torch.Tensor=None, keepdim=False, dim=-1, distance:str='geodesic') -> torch.Tensor:
         """
-        Compute pairwise Lorentzian distances between two sets of points on the hyperboloid.
+        Compute pairwise (lorentz | geodesic) distances between two sets of points on the hyperboloid.
         Args:
             x1: Tensor of shape `(Nq, D)` giving `Nq` points on the hyperboloid.
             x2: Optional tensor of shape `(Nf, D)` giving `Nf` points on the hyperboloid.
                 If `None`, compute pairwise distances within `x1`.
             keepdim: Whether to keep the last dimension (of size 1) in the output.
             dim: The dimension corresponding to the coordinates of the points.
+            distance: Type of distance to compute, either 'geodesic' or 'lorentz'.
         Returns:
             Tensor of shape `(Nq, Nf)` (or `(Nq, Nf, 1)` if `keepdim=True`) giving
-            pairwise Lorentzian distances.
+            pairwise (lorentz | geodesic) distances.
         """
         if x2 is None:
             x2 = x1
         x1 = x1.unsqueeze(1)  # (Nq, 1, D)
         x2 = x2.unsqueeze(0)  # (1, Nf, D)
 
-        dists = self.dist(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
+        if distance == 'geodesic':
+            dists = self.dist(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
+        elif distance == 'lorentz':
+            dists = self.lorentzian_distance(x1, x2, keepdim=keepdim, dim=dim)  # (Nq, Nf)
 
         return dists
     

@@ -7,13 +7,18 @@ class ManifoldDistance(BaseDistance):
     """
     Wraps geodesic distance computations on a given Lorentz manifold to be compatible
     with pytorch-metric-learning losses and miners.
+    Args:
+        manifold: An instance of the Lorentz manifold from hypercore.
+        distance: The type of distance to compute. ('geodesic' | 'lorentz')
     """
-    def __init__(self, manifold: Lorentz, normalize_embeddings:bool=True, **kwargs):
+    def __init__(self, manifold: Lorentz, distance:str='geodesic', **kwargs):
         super().__init__(is_inverted=False, **kwargs)
         self.manifold = manifold
-        self.normalize_embeddings = normalize_embeddings
+        self.distance = distance
         self.collect_stats = False 
-        self.power = 1
+        assert not self.normalize_embeddings
+        assert self.power == 1
+        assert self.is_inverted is False
 
     def forward(self, query_emb, ref_emb=None):
         self.reset_stats()
@@ -28,8 +33,8 @@ class ManifoldDistance(BaseDistance):
             query_emb, ref_emb, query_emb_normalized, ref_emb_normalized
         )
         mat = self.compute_mat(query_emb_normalized, ref_emb_normalized)
-        if self.power != 1:
-            mat = mat**self.power
+        # if self.power != 1:
+        #     mat = mat**self.power
         assert mat.size() == torch.Size((query_emb.size(0), ref_emb.size(0)))
         return mat
 
@@ -45,7 +50,7 @@ class ManifoldDistance(BaseDistance):
         return mat.to(dtype)
     
     def pairwise_distance(self, query_emb, ref_emb):
-        return self.manifold.pairwise_distance(query_emb, ref_emb, keepdim=False, dim=-1)  # [N]
+        return self.manifold.pairwise_distance(query_emb, ref_emb, keepdim=False, dim=-1, distance=self.distance)  # [N]
 
     def smallest_dist(self, *args, **kwargs):
         if self.is_inverted:
@@ -65,7 +70,6 @@ class ManifoldDistance(BaseDistance):
 
     def normalize(self, embeddings, dim=1, **kwargs):
         return self.manifold.normalize(embeddings, dim=dim, **kwargs)
-        # return torch.nn.functional.normalize(embeddings, p=self.p, dim=dim, **kwargs)
 
     def maybe_normalize(self, embeddings, dim=1, **kwargs):
         if self.normalize_embeddings:
@@ -75,7 +79,6 @@ class ManifoldDistance(BaseDistance):
     def get_norm(self, embeddings, dim=1, **kwargs):
         raise NotImplementedError
         return self.manifold.norm(embeddings, dim=dim, **kwargs)
-        # return torch.norm(embeddings, p=self.p, dim=dim, **kwargs)
 
     def set_default_stats(
         self, query_emb, ref_emb, query_emb_normalized, ref_emb_normalized
