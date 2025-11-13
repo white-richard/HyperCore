@@ -1,5 +1,4 @@
 local/
-test.py
 hypercore/data/
 
 __pycache__
