@@ -63,11 +63,11 @@ def train(opt_name: str, model_name: str):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     manifold = Lorentz(1.0)
-    if model_name == 'ViT':
+    if model_name == "ViT":
         model = LViT_tiny(
             manifold, manifold, manifold, num_classes=10, image_size=32, patch_size=8
         ).to(device)
-    elif model_name == 'Swin':
+    elif model_name == "Swin":
         model = LSwin_tiny(
             manifold, manifold, manifold, num_classes=10, image_size=32, window_size=4
         ).to(device)
@@ -187,5 +187,7 @@ if __name__ == "__main__":
     # Swin
     print("Swin:")
     print("Final Test Acc@1 with RiemannianAdamW: {:.4f}".format(swin_acc1_adamw))
-    print("Final Test Acc@1 with RiemannianAdamWOld: {:.4f}".format(swin_acc1_adamw_old))
+    print(
+        "Final Test Acc@1 with RiemannianAdamWOld: {:.4f}".format(swin_acc1_adamw_old)
+    )
     print("Final Test Acc@1 with RiemannianAdam: {:.4f}".format(swin_acc1_adam))
