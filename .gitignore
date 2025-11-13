@@ -4,6 +4,8 @@ hypercore/data/
 
 __pycache__
 *.pyc
+*cpython*.pyc
+
 
 *.pyc
 *.DS_Store
