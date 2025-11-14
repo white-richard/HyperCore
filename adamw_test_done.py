@@ -1,3 +1,13 @@
+"""
+ViT:
+Final Test Acc@1 with RiemannianAdamW: 82.1785
+Final Test Acc@1 with RiemannianAdamWOld: 80.1018
+Final Test Acc@1 with RiemannianAdam: 81.4796
+Swin:
+Final Test Acc@1 with RiemannianAdamW: 83.6761
+Final Test Acc@1 with RiemannianAdamWOld: 83.7161
+Final Test Acc@1 with RiemannianAdam: 83.6062
+"""
 import torch
 from hypercore.optimizers.radamw import RiemannianAdamW
 from hypercore.optimizers.radamw_old import RiemannianAdamWOld
