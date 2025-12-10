@@ -1,6 +1,7 @@
 local/
 hypercore/data/
 data/
+results/
 
 __pycache__
 *.pyc

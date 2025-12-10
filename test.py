@@ -158,7 +158,6 @@ def train(output_dir, lr, is_hyperbolic: bool = False, writer=None):
                 losses.append(loss.item())
                 acc1.append(top1.item())
                 acc5.append(top5.item())
-            break
 
         with torch.no_grad():
             print(
@@ -187,7 +186,6 @@ def train(output_dir, lr, is_hyperbolic: bool = False, writer=None):
                 global_step=epoch,
             )
             writer.flush()
-            break
 
     if is_hyperbolic:
         model_path = "Hyp_LViT.pt"
@@ -211,7 +209,6 @@ def train(output_dir, lr, is_hyperbolic: bool = False, writer=None):
         losses.append(loss.item())
         acc1.append(top1.item())
         acc5.append(top5.item())
-        break
 
     loss_test = np.mean(losses)
     acc1_test = np.mean(acc1)
