@@ -1,30 +1,40 @@
 # HyperCore
 
-**HyperCore** is a framework built upon PyTorch to easily write and train hyperbolic foundation models for a wide range of applications in diverse modalities. [PAPER LINK](https://arxiv.org/abs/2504.08912)
+**HyperCore** is a framework built upon PyTorch to easily write and train hyperbolic foundation models for a wide range of applications in diverse modalities. [paper (arXiv)](https://arxiv.org/abs/2504.08912)
 
-We provide the core modules and functionalities that makes this process simple for users of all backgrounds in differential geometry. These include methods and algorithms for hyperbolic neural networks and foundation models, optimization techiniques, and manifold operations. These come together to enable intuitive constructions of hyperbolic foundation models architectures and pipelines, e.g. [hyperbolic Transformer encoder](example_usage/Hyperbolic_Transformers/lorentz_transformer.py), [hyperbolic ViT](example_usage/Hyperbolic_Transformers/vision_transformer.py), [hyperbolic fine-tuning](example_usage/Fine-Tuning/fine_tuning_example.py), [hyperbolic GraphRAG](example_usage/Hyperbolic_GraphRAG/graphRAG_example.py) and much more (see our paper and tutorials below!). 
+We provide the core modules and functionalities that makes this process simple for users of all backgrounds in differential geometry. These include methods and algorithms for hyperbolic neural networks and foundation models, optimization techiniques, and manifold operations. These come together to enable intuitive constructions of hyperbolic foundation models architectures and pipelines, e.g. [hyperbolic Transformer encoder](example_usage/Hyperbolic_Transformers/lorentz_transformer.py), [hyperbolic ViT](example_usage/Hyperbolic_Transformers/vision_transformer.py), [hyperbolic fine-tuning](example_usage/Fine-Tuning/fine_tuning_example.py), [hyperbolic GraphRAG](example_usage/Hyperbolic_GraphRAG/graphRAG_example.py) and much more (see our paper and tutorials below!).
 
 - [HyperCore](#hypercore)
   - [Framework Highlights](#framework-highlights)
-  - [Installation](#installation)
-  - [Installation with local pip](#installation-with-local-pip)
+  - [Installation (deprecated, see dev install below)](#installation-deprecated-see-dev-install-below)
+  - [Development install (recommended)](#development-install-recommended)
   - [Quick Start: Build Hyperbolic Foundation Models](#quick-start-build-hyperbolic-foundation-models)
     - [Creating Your Own Hyperbolic Transformer Encoder Block](#creating-your-own-hyperbolic-transformer-encoder-block)
     - [Training a Hyperbolic Vision Transformer](#training-a-hyperbolic-vision-transformer)
   - [Framework Overview](#framework-overview)
   - [Implemented Modules and Details](#implemented-modules-and-details)
-
+    - [Manifolds and Optimizers](#manifolds-and-optimizers)
+    - [Hyperbolic Linear Layers](#hyperbolic-linear-layers)
+    - [Hyperbolic Activation Layers](#hyperbolic-activation-layers)
+    - [Hyperbolic Classification Layers](#hyperbolic-classification-layers)
+    - [Hyperbolic Convolutional \& Residual Layers](#hyperbolic-convolutional--residual-layers)
+    - [Hyperbolic Normalization \& Pooling Layers](#hyperbolic-normalization--pooling-layers)
+    - [Hyperbolic Attention Mechanism and Transformer-related Modules](#hyperbolic-attention-mechanism-and-transformer-related-modules)
+    - [Hyperbolic Graph and Neighborhood Aggregation](#hyperbolic-graph-and-neighborhood-aggregation)
 
 ## Framework Highlights
+
 HyperCore is accessible to experts in hyperbolic deep learning, the more general AI audience, and first-time user of deep learning toolkits alike. Here are some reasons you might want to use HyperCore for building, training, or using foundation models in hyperbolic space!
 
 - **Flexible and Intuitive Foundation Model Support:** HyperCore it is capable of doing much more than reproducing existing models—its components can be effortlessly combined to construct novel hyperbolic foundation models that have yet to be proposed. See [example usage](example_usage) for extensive examples of how to build hyperbolic foundation models with HyperCore!
-- **Easy-to-use Modules:** As the API is designed almost identically to Euclidean counterparts, users only need a high-level understanding of foundation models to build hyperbolic ones using HyperCore. All it takes is a few lines to create hyperbolic foundation models components like fully hyperbolic Transformer encoder blocks (see [here](#quick-start-build-hyperbolic-foundation-models) for a quick start guide)!
-- **Comprehensive Modules and Model Support:** Unlike anything out there, hyperCore provides a comprehensive and extensive list of essential hyperbolic modules for building a wide range of hyperbolic foundation models for learning across diverse modalities. 
+- **Easy-to-use Modules:** As the API is designed almost identically to Euclidean counterparts, users only need a high-level understanding of foundation models to build hyperbolic ones using HyperCore. All it takes is a few lines to create hyperbolic foundation models components like fully hyperbolic Transformer encoder blocks (see the [Quick Start: Build Hyperbolic Foundation Models](#quick-start-build-hyperbolic-foundation-models) section for a quick start guide)!
+- **Comprehensive Modules and Model Support:** Unlike anything out there, hyperCore provides a comprehensive and extensive list of essential hyperbolic modules for building a wide range of hyperbolic foundation models for learning across diverse modalities.
 
-## Installation
-For now, the dependencies for HyperCore can be installed via 
-```
+## Installation (deprecated, see dev install below)
+
+For now, the dependencies for HyperCore can be installed via:
+
+```bash
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
 pip install torch_geometric
 pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.6.0+cu124.html
@@ -35,24 +45,45 @@ cd llm-foundry
 pip install -e ".[gpu]"
 cd ..
 ```
-Installation via pip directly is ***coming soon...***
 
-## Installation with local pip
+## Development install (recommended)
+
+We provide a small Fish script `install_dev.fish` that installs this repository's Python dependencies and performs an editable install using the `uv` command-line tool.
+
+**Prerequisites:**
+
+- fish shell
+- `uv` on your PATH (install with `uv pip install`)
+
+Run the installer:
+
+```fish
+# From anywhere:
+fish path/to/hypercore/install_dev.fish
+```
+
+What it does:
+
+- Installs packages from `requirements.txt` using `uv pip install -r`
+- Installs this repo in editable mode using `uv pip install -e .`
+- Exits on error and prints progress
+
+If you don't use Fish or `uv`, reproduce the same steps manually:
 
 ```bash
-python -m pip install --upgrade pip setuptools wheel packaging && \
-python -m pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124 && \
-python -m pip install torch_geometric && \
-python -m pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.6.0+cu124.html && \
-python -m pip install -r requirements.txt && \
-python -m pip install scipy==1.13.1 numpy==1.26.4 && \
+python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
+**Note:** some packages (e.g., PyTorch and PyG) may require specific CUDA wheels; see the main Installation section above for the recommended commands if you need a particular CUDA build.
+
 ## Quick Start: Build Hyperbolic Foundation Models
+
 In this quick start guide, we highlight the ease of creating and training a hyperbolic foundation model model with HyperCore.
+
 ### Creating Your Own Hyperbolic Transformer Encoder Block
-In the first glimpse of HyperCore, we build the encoder block of a hyperbolic Transformer, using hyperbolic-tailored modules such as [LorentzMultiheadAttention](hypercore/nn/attention/lorentz_former_conv.py) for multi-head attention and [LResNet](hypercore/nn/conv/conv_util_layers.py) for residual connection. 
+
+In the first glimpse of HyperCore, we build the encoder block of a hyperbolic Transformer, using hyperbolic-tailored modules such as [LorentzMultiheadAttention](hypercore/nn/attention/lorentz_former_conv.py) for multi-head attention and [LResNet](hypercore/nn/conv/conv_util_layers.py) for residual connection.
 
 ```python
 import torch
@@ -89,9 +120,10 @@ class LTransformerBlock(nn.Module):
 For more examples of how to employ hyperbolic foundation model components in downstream tasks, please see [example usages](example_usage)
 
 ### Training a Hyperbolic Vision Transformer
-Let's take a quick look at how to easily train a pre-built hyperbolic foundation model with HyperCore, by looking at an example of training a Lorentzian vision Transformer (LViT, see [our paper](https://arxiv.org/abs/2504.08912) for more details) on classifying images in the CIFAR10 dataset. 
 
-In particular, since hyperbolic parameters require special update rules (see [here](https://arxiv.org/abs/1810.00760) for more details), HyperCore automatically sets up the optimizers to update Euclidean and hyperbolic parameters. Additionally, we can use different optimization schemes for parameters on different manifolds. 
+Let's take a quick look at how to easily train a pre-built hyperbolic foundation model with HyperCore, by looking at an example of training a Lorentzian vision Transformer (LViT, see [our paper](https://arxiv.org/abs/2504.08912) for more details) on classifying images in the CIFAR10 dataset.
+
+In particular, since hyperbolic parameters require special update rules (see [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760) for more details), HyperCore automatically sets up the optimizers to update Euclidean and hyperbolic parameters. Additionally, we can use different optimization schemes for parameters on different manifolds.
 
 Functionalities like these make it seamless to transition from training Euclidean foundation models to hyperbolic ones.
 
@@ -186,10 +218,11 @@ print("Results: Acc@1={:.4f}, Acc@5={:.4f}".format(acc1_test, acc5_test))
 ```
 
 ## Framework Overview
-HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. See framework snapshot for visual organization. 
+
+HyperCore is a framework that supports constructing, developing, and evaluating hyperbolic foundation models from multiple levels, from fundamental training schemes to modules with hyperbolic layers to the models and downstream tasks themselves. See framework snapshot for visual organization.
 
 - **Hyperbolic manifold and optimizers:** These are essential building blocks of training any hyperbolic foundation model. HyperCore builds on top of the well-optimized manifolds and optimizers of [Geoopt](https://github.com/geoopt/geoopt). HyperCore extends the manifolds to incorporate more fundamental operations, e.g. [hyperbolic entailment cones](https://arxiv.org/abs/2304.09172). The optimizers also allow for seemless transition to hyperbolic training schemes (see the [above section](#training-a-hyperbolic-vision-transformer)).
-- **Hyperbolic Modules and Layers:** HyperCore implemented an extensive list of modules and layers from current research to support building both existing and new hyperbolic foundation models. Additionally, novel hyperbolic modules were developed specifically for HyperCore for building hyperbolic foundation models, such as performing hyperbolic RoPE through pseudo Lorentzian rotations. 
+- **Hyperbolic Modules and Layers:** HyperCore implemented an extensive list of modules and layers from current research to support building both existing and new hyperbolic foundation models. Additionally, novel hyperbolic modules were developed specifically for HyperCore for building hyperbolic foundation models, such as performing hyperbolic RoPE through pseudo Lorentzian rotations.
 - **Lower-level Hyperbolic Models:** HyperCore supports building-block hyperbolic neural networks (e.g. GNNs, CNNs, etc) and hyperbolic foundation models (e.g. ViT and Transformer), implemented in [models](hypercore/models) with examples in [example_usage](example_usage).
 - **Higher-level Hyperbolic Models:** With the lower-level hyperbolic models, HyperCore also supports building higher-level hyperbolic foundation models, such as fully hyperbolic CLIP models, hyperbolic GraphRAG models, and hyperbolic fine-tuning. These are implemented in [models](hypercore/models) with examples in [example_usage](example_usage).
 - **Downstream Tasks Support:** Many hyperbolic operations for downstream tasks are also implemented, such as hyperbolic loss functions.
@@ -197,77 +230,62 @@ HyperCore is a framework that supports constructing, developing, and evaluating 
 ![Framework Snapshot](assets/snapshot.png)
 
 ## Implemented Modules and Details
+
 HyperCore implements the following list of hyperbolic modules and layers:
 
-<details>
-<summary>Manifolds and Optimizers (click to expand)</summary>
+### Manifolds and Optimizers
 
-- Lorentz hyperboloid ([source code](hypercore/manifolds/lorentzian.py)) and Poincare Ball model ([source code](hypercore/manifolds/poincare.py)), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
-- Riemannian Adam ([source code](hypercore/optimizers/radam.py)) and SGD ([source code](hypercore/optimizers/rsgd.py)) optimizers from Bécigneul et al., [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
-</details>
+- [Lorentz hyperboloid implementation](hypercore/manifolds/lorentzian.py) and [Poincare Ball implementation](hypercore/manifolds/poincare.py), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
+- [Riemannian Adam implementation](hypercore/optimizers/radam.py) and [Riemannian SGD implementation](hypercore/optimizers/rsgd.py) optimizers from Bécigneul et al., [Riemannian Adaptive Optimization Methods](https://arxiv.org/abs/1810.00760), based on Kochurov et al., [Geoopt: Riemannian Optimization in PyTorch](https://arxiv.org/abs/2005.02819)
 
-<details>
-<summary>Hyperbolic Linear Layers(click to expand)</summary>
+### Hyperbolic Linear Layers
 
-- HyboNet linear layer [source code](hypercore/nn/linear/hybonet_linear.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
-- Hypformer linear layer [source code](hypercore/nn/linear/lorentz_linear.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Tangent-space-based linear layer [source code](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
-- Poincare linear layer [source code](hypercore/nn/linear/poincare_linear.py) from Shimizu et al., [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
-</details>
+- [HyboNet linear layer implementation](hypercore/nn/linear/hybonet_linear.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- [Hypformer linear layer implementation](hypercore/nn/linear/lorentz_linear.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- [Tangent-space-based linear layer implementation](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
+- [Poincare linear layer implementation](hypercore/nn/linear/poincare_linear.py) from Shimizu et al., [Hyperbolic Neural Networks++](https://arxiv.org/abs/2006.08210)
 
-<details>
-<summary>Hyperbolic Activation Layers(click to expand)</summary>
+### Hyperbolic Activation Layers
 
-- Fully hyperbolic (Lorentz) activation layer [source code](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Tangent-space-based activation layer [source code](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
-</details>
+- [Fully hyperbolic (Lorentz) activation layer implementation](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- [Tangent-space-based activation layer implementation](hypercore/nn/linear/hnn_layers.py) from Ganea et al., [Hyperbolic Neural Networks](https://arxiv.org/abs/1805.09112)
 
-<details>
-<summary>Hyperbolic Classification Layers(click to expand)</summary>
+### Hyperbolic Classification Layers
 
-- Fully hyperbolic Lorentzian MLR layer [source code](hypercore/nn/conv/lorentz_MLR.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
-- Poincare MLR layer [source code](hypercore/nn/conv/poincare_MLR.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
-</details>
+- [Fully hyperbolic Lorentzian MLR layer implementation](hypercore/nn/conv/lorentz_MLR.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
+- [Poincare MLR layer implementation](hypercore/nn/conv/poincare_MLR.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
 
-<details>
-<summary>Hyperbolic Convolutional & Residual Layers(click to expand)</summary>
+### Hyperbolic Convolutional & Residual Layers
 
-- Fully hyperbolic Lorentzian convolution layer [source code](hypercore/nn/conv/lorentz_convolution.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919), modified based on linear layer from Hypformer (Yang et al.,)
-- Poincare convolution layer [source code](hypercore/nn/conv/poincare_convolution.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
-- Fully hyperbolic Lorentzian residual layer (LResNet) [source code](hypercore/nn/conv/conv_util_layers.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
-- Parallel-transport-space-based residual layer [source code](hypercore/nn/linear/hnn_layers.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
-</details>
+- [Fully hyperbolic Lorentzian convolution layer implementation](hypercore/nn/conv/lorentz_convolution.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919), modified based on linear layer from Hypformer (Yang et al.,)
+- [Poincare convolution layer implementation](hypercore/nn/conv/poincare_convolution.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- [Fully hyperbolic Lorentzian residual layer (LResNet) implementation](hypercore/nn/conv/conv_util_layers.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
+- [Parallel-transport-space-based residual layer implementation](hypercore/nn/linear/hnn_layers.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
 
-<details>
-<summary>Hyperbolic Normalization & Pooling Layers(click to expand)</summary>
+### Hyperbolic Normalization & Pooling Layers
 
-- Lorentzian batch normalization from [source code](hypercore/nn/conv/poincare_batch_norm.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
-- Poincare batch normalization from [source code](hypercore/nn/conv/poincare_batch_norm.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
-- Fully hyperbolic Lorentzian layer normalization [source code](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Fully hyperbolic Lorentzian batch normalization [source code](hypercore/nn/conv/lorentz_batch_norm.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
-- Fully hyperbolic Lorentzian global pooling layer [source code](hypercore/nn/conv/lorentz_pooling.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
-</details>
+- [Lorentzian batch normalization implementation](hypercore/nn/conv/poincare_batch_norm.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
+- [Poincare batch normalization implementation](hypercore/nn/conv/poincare_batch_norm.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- [Fully hyperbolic Lorentzian layer normalization implementation](hypercore/nn/conv/conv_util_layers.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- [Fully hyperbolic Lorentzian batch normalization implementation](hypercore/nn/conv/lorentz_batch_norm.py) from He et al., [Lorentzian Residual Neural Networks](https://arxiv.org/abs/2412.14695)
+- [Fully hyperbolic Lorentzian global pooling layer implementation](hypercore/nn/conv/lorentz_pooling.py) from Bdeir et al., [Fully Hyperbolic Convolutional Neural Networks for Computer Vision](https://arxiv.org/abs/2303.15919)
 
-<details>
-<summary>Hyperbolic Attention Mechanism and Transformer-related Modules(click to expand)</summary>
+### Hyperbolic Attention Mechanism and Transformer-related Modules
 
-- Lorentzian self-attention layer [source code](hypercore/nn/attention/lorentz_former_conv.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686), modified based on linear layer from Hypformer (Yang et al.,)
-- Lorentzian linear attention layer [source code](hypercore/nn/attention/lorentz_former_conv.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-- Poincare self-attention layer [source code](hypercore/nn/attention/poincare_attention.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
-- Lorentzian word embedding [source code](hypercore/nn/attention/lorentz_word_emb.py). Developed for HyperCore, optionally allows for positional encoding enabled by LResNet (He et al.,)
-- Lorentzian patch embedding [source code](hypercore/nn/attention/patch_embedding.py). Developed for HyperCore, based on Lorentzian convolutional layer from HCNN (Bdeir et al.,)
-- Lorentzian RoPE mechanism [source code](hypercore/nn/attention/lorentz_former_conv.py). Developed for HyperCore, based on pseudo Lorentzian rotation, incorporated into Lorentzian self-attention layers
-- Lorentzian relative positional encoding [source code](hypercore/nn/attention/positional_encoding.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
-</details>
+- [Lorentzian self-attention layer implementation](hypercore/nn/attention/lorentz_former_conv.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686), modified based on linear layer from Hypformer (Yang et al.,)
+- [Lorentzian linear attention layer implementation](hypercore/nn/attention/lorentz_former_conv.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
+- [Poincare self-attention layer implementation](hypercore/nn/attention/poincare_attention.py) from van Spengler et al., [Poincare ResNet](https://arxiv.org/abs/2303.14027)
+- [Lorentzian word embedding implementation](hypercore/nn/attention/lorentz_word_emb.py). Developed for HyperCore, optionally allows for positional encoding enabled by LResNet (He et al.,)
+- [Lorentzian patch embedding implementation](hypercore/nn/attention/patch_embedding.py). Developed for HyperCore, based on Lorentzian convolutional layer from HCNN (Bdeir et al.,)
+- [Lorentzian RoPE mechanism implementation](hypercore/nn/attention/lorentz_former_conv.py). Developed for HyperCore, based on pseudo Lorentzian rotation, incorporated into Lorentzian self-attention layers
+- [Lorentzian relative positional encoding implementation](hypercore/nn/attention/positional_encoding.py) from Yang et al., [Hypformer: Exploring Efficient Hyperbolic Transformer Fully in Hyperbolic Space](https://arxiv.org/abs/2407.01290)
 
-<details>
-<summary>Hyperbolic Graph and Neighborhood Aggregation(click to expand)</summary>
+### Hyperbolic Graph and Neighborhood Aggregation
 
-- HGCN GCN layer [source code](hypercore/nn/graph_conv/hgcn_conv.py) from Chami et al., [Hyperbolic Graph Convolutional Neural Networks](https://arxiv.org/abs/1910.12933)
-- HGNN GNN layer [source code](hypercore/nn/graph_conv/hgnn_conv.py) from Liu et al., [Hyperbolic Graph Neural Networks](https://arxiv.org/abs/1910.12892)
-- HyboNet GCN layer [source code](hypercore/nn/graph_conv/hyobnet_conv.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
-- HGAT GAT layer [source code](hypercore/nn/graph_conv/hgat_conv.py) from Zhang et al., [Hyperbolic Graph Attention Network](https://arxiv.org/abs/1912.03046)
-- LGCN GCN layer [source code](hypercore/nn/graph_conv/lgcn_conv.py) from Zhang et al., [Lorentzian Graph Convolutional Networks](https://arxiv.org/abs/2104.07477)
-- H2HGCN GCN layer [source code](hypercore/nn/graph_conv/h2h_conv.py) from Dai et al., [A Hyperbolic-to-Hyperbolic Graph Convolutional Network](https://arxiv.org/abs/2104.06942)
-- GIL GAT layer [source code](hypercore/nn/graph_conv/gil_conv.py) from Zhu et al., [Graph Geometry Interaction Learning](https://arxiv.org/abs/2010.12135)
-</details>
+- [HGCN GCN layer implementation](hypercore/nn/graph_conv/hgcn_conv.py) from Chami et al., [Hyperbolic Graph Convolutional Neural Networks](https://arxiv.org/abs/1910.12933)
+- [HGNN GNN layer implementation](hypercore/nn/graph_conv/hgnn_conv.py) from Liu et al., [Hyperbolic Graph Neural Networks](https://arxiv.org/abs/1910.12892)
+- [HyboNet GCN layer implementation](hypercore/nn/graph_conv/hyobnet_conv.py) from Chen et al., [Fully Hyperbolic Neural Networks](https://arxiv.org/abs/2105.14686)
+- [HGAT GAT layer implementation](hypercore/nn/graph_conv/hgat_conv.py) from Zhang et al., [Hyperbolic Graph Attention Network](https://arxiv.org/abs/1912.03046)
+- [LGCN GCN layer implementation](hypercore/nn/graph_conv/lgcn_conv.py) from Zhang et al., [Lorentzian Graph Convolutional Networks](https://arxiv.org/abs/2104.07477)
+- [H2HGCN GCN layer implementation](hypercore/nn/graph_conv/h2h_conv.py) from Dai et al., [A Hyperbolic-to-Hyperbolic Graph Convolutional Network](https://arxiv.org/abs/2104.06942)
+- [GIL GAT layer implementation](hypercore/nn/graph_conv/gil_conv.py) from Zhu et al., [Graph Geometry Interaction Learning](https://arxiv.org/abs/2010.12135)
